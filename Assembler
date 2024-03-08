@@ -1,2 +1,60 @@
-print("Hello World")
-print("me not sharma")
+def binary(n,b):
+    n=int(n)
+    s=""
+    if n>=0:
+        while n!=0:
+            s+=str(n%2)
+            n=n//2
+        while len(s)<b:
+            s+="0"
+    else:
+        n*=-1
+        while n!=0:
+            s+=str(n%2)
+            n=n//2
+        s+="0"
+        sc=""
+        check=0
+        for i in s:
+            if i=="0" and check==0:
+                sc+=s
+            else:
+                check=1
+                if i=="0":
+                    sc+="1"
+                else:
+                    sc+="0"
+        while len(sc)<b:
+            sc+="1"
+        s=sc
+    return s
+
+utype={"auipc":"0010111","lui":"0110111"}
+jtype={"jal":"1101111"}
+
+#Now, i or some variable will be iterating through readlines of the text file
+#Therefore, assuming a dummy "i" here
+i=str()
+#dummy dict for registers
+reg={}
+
+labels={}
+lines=[]
+count=0
+
+j=i.split()
+'''
+if j[0][-1]!=":":
+    j.insert(0,"")
+else:
+  labels[j[0]]=count
+'''
+
+if j[1] in utype:
+  op=j[2].split(",")
+  line=binary(op[1],20)+reg[op[0]]+utype[j[1]]
+  lines.append(line)
+elif j[1] in jtype:
+  op=j[2].split(",")
+  line=binary(op[1],20)+reg[op[0]]+jtype[j[1]]    
+  lines.append(line)
