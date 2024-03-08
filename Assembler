@@ -60,13 +60,12 @@ elif j[1] in jtype:
   lines.append(line)
 
 
-#Abhinav's part
+#I & S type Instruction
 itype = {'lw': '0000011' ,'addi':'0010011' ,'sltiu':'0010011' ,'jalr':'1100111'}
 stype = {'sw':'0100011'}
-def decimal_to_binary_12bit(n):
-    return format(n if n >= 0 else (1 << 12) + n, '012b')
+reg = {'sp': '00010', 'ra': '00001', 'a5': '01111', 's1': '01001'}
 def i_code(x):
-    if(x[0] == 'lw'):
+    if x[0] == 'lw':
         y = x[1].split(',')
         imm1 = ''
         for char in y[1]:
@@ -74,21 +73,20 @@ def i_code(x):
                 imm1 += char
             else:
                 break
-        rs1 = y[1][y[1].index('(')+1:-1]
+        rs1 = y[1][y[1].index('(') + 1:-1]
         imm = decimal_to_binary_12bit(int(imm1))
-        return str(imm)+str(reg(rs1))+'010'+str(reg(y[0]))+str(itype['lw'])
-    elif: 
+        return str(imm) + str(reg[rs1]) + '010' + str(reg[y[0]]) + str(itype['lw'])
+    else: 
         y = x[1].split(',')
         imm = decimal_to_binary_12bit(int(y[2]))
-        offset =imm
-        if(x[0] == 'addi'):
-            return str(imm)+str(reg(str(y[0])))+'000'+str(reg(str(y[1])))+str(itype['addi'])
-        elif(x[0] == 'sltiu'):
-            return str(imm)+str(reg(str(y[0])))+'011'+str(reg(str(y[1])))+str(itype['sltiu'])
-        elif(x[0] == 'jalr'):
-            return str(offset)+str(reg(str(y[0])))+'000'+str(reg(str(y[1])))+str(itype['jalr'])
-    else: 
-        return exit
+        if x[0] == 'addi':
+            return str(imm) + str(reg[y[0]]) + '000' + str(reg[y[1]]) + str(itype['addi'])
+        elif x[0] == 'sltiu':
+            return str(imm) + str(reg[y[0]]) + '011' + str(reg[y[1]]) + str(itype['sltiu'])
+        elif x[0] == 'jalr':
+            return str(imm) + str(reg[y[0]]) + '000' + str(reg[y[1]]) + str(itype['jalr'])
+        else: 
+            return "Invalid instruction"
 
 def s_code(x):
     y = x[1].split(',')
@@ -98,9 +96,9 @@ def s_code(x):
             imm1 += char
         else:
             break
-    rs1 = y[1][y[1].index('(')+1:-1]
+    rs1 = y[1][y[1].index('(') + 1:-1]
     imm = decimal_to_binary_12bit(int(imm1))
-    return imm[:7] + reg(y[0]) + reg(rs1) + '010' + imm[7:12]+ stype['sw']
+    return imm[:7] + reg[y[0]] + reg[rs1] + '010' + imm[7:] + stype['sw']
 #end here
 
 #B type instructions
