@@ -64,12 +64,7 @@ elif j[1] in jtype:
 itype = {'lw': '0000011' ,'addi':'0010011' ,'sltiu':'0010011' ,'jalr':'1100111'}
 stype = {'sw':'0100011'}
 def decimal_to_binary_12bit(n):
-    if n >= 0:
-        binary = bin(n)[2:]
-        return '0' * (12 - len(binary)) + binary
-    else:
-        binary = bin(2**12 + n)[2:]
-        return binary[-12:]
+    return format(n if n >= 0 else (1 << 12) + n, '012b')
 def i_code(x):
     if(x[0] == 'lw'):
         y = x[1].split(',')
