@@ -64,7 +64,13 @@ elif j[1] in jtype:
 itype = {'lw': '0000011' ,'addi':'0010011' ,'sltiu':'0010011' ,'jalr':'1100111'}
 stype = {'sw':'0100011'}
 reg = {'sp': '00010', 'ra': '00001', 'a5': '01111', 's1': '01001'}
+def decimal_to_binary_12bit(n):
+    if n>=-2048 and n<= 2047:
+        return format(n if n >= 0 else (1 << 12) + n, '012b')
+    else:
+        return "Invalid instruction"
 def i_code(x):
+    funct3 = str(itype[x[0]][1]); opcode = str(itype[x[0]][0])
     if x[0] == 'lw':
         y = x[1].split(',')
         imm1 = ''
@@ -75,19 +81,18 @@ def i_code(x):
                 break
         rs1 = y[1][y[1].index('(') + 1:-1]
         imm = decimal_to_binary_12bit(int(imm1))
-        return str(imm) + str(reg[rs1]) + '010' + str(reg[y[0]]) + str(itype['lw'])
+        return str(imm) + str(reg[rs1]) + funct3 + str(reg[y[0]]) + opcode
     else: 
         y = x[1].split(',')
         imm = decimal_to_binary_12bit(int(y[2]))
         if x[0] == 'addi':
-            return str(imm) + str(reg[y[0]]) + '000' + str(reg[y[1]]) + str(itype['addi'])
+            return str(imm) + str(reg[y[0]]) + funct3 + str(reg[y[1]]) + opcode
         elif x[0] == 'sltiu':
-            return str(imm) + str(reg[y[0]]) + '011' + str(reg[y[1]]) + str(itype['sltiu'])
+            return str(imm) + str(reg[y[0]]) + funct3 + str(reg[y[1]]) + opcode
         elif x[0] == 'jalr':
-            return str(imm) + str(reg[y[0]]) + '000' + str(reg[y[1]]) + str(itype['jalr'])
+            return str(imm) + str(reg[y[0]]) + funct3 + str(reg[y[1]]) + opcode
         else: 
             return "Invalid instruction"
-
 def s_code(x):
     y = x[1].split(',')
     imm1 = ''
@@ -96,9 +101,9 @@ def s_code(x):
             imm1 += char
         else:
             break
-    rs1 = y[1][y[1].index('(') + 1:-1]
+    rs1 = y[1][y[1].index('(') + 1:-1]; opcode = str(stype[x[0][0]]); funct3 = str(stype[x[0]][1])
     imm = decimal_to_binary_12bit(int(imm1))
-    return imm[:7] + reg[y[0]] + reg[rs1] + '010' + imm[7:] + stype['sw']
+    return imm[:7] + reg[y[0]] + reg[rs1] + funct3 + imm[7:] + opcode
 #end here
 
 #B type instructions
