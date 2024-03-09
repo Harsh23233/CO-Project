@@ -63,7 +63,6 @@ elif j[1] in jtype:
 #I & S type Instruction
 itype = {'lw': ('0000011','010'), 'addi': ('0010011','000'), 'sltiu': ('0010011','011'), 'jalr': ('1100111','000')}
 stype = {'sw': ('0100011','010')}
-reg = {'sp': '00010', 'ra': '00001', 'a5': '01111', 's1': '01001'}
 def decimal_to_binary_variable_length(n, length):
     if 2 ** (length - 1) <= n < 2 ** length:
         return format(n if n >= 0 else (1 << length) + n, f'0{length}b')
