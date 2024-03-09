@@ -158,8 +158,10 @@ def decimal_string_to_binary(decimal_string):
     return binary_string
 
 # for input
-lines = [line.strip().split() for line in sys.stdin.readlines()]
+lines = [line.strip() for line in sys.stdin.readlines()]
 lines = [line for line in lines if line]
+lines = [line.split() for line in lines]
+lines = [[line[0]] + line[1].split(',') for line in lines]
 for line in lines:
     temp = ''
     label = decimal_string_to_binary(line[3])
