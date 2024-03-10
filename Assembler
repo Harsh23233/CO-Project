@@ -1,40 +1,10 @@
-def binary(n,b):
-    n=int(n)
-    s=""
-    if n>=0:
-        while n!=0:
-            s+=str(n%2)
-            n=n//2
-        while len(s)<b:
-            s+="0"
-    else:
-        n*=-1
-        while n!=0:
-            s+=str(n%2)
-            n=n//2
-        s+="0"
-        sc=""
-        check=0
-        for i in s:
-            if i=="0" and check==0:
-                sc+=s
-            else:
-                check=1
-                if i=="0":
-                    sc+="1"
-                else:
-                    sc+="0"
-        while len(sc)<b:
-            sc+="1"
-        s=sc
-    return s
-
+#utype and jtype portion
 utype={"auipc":"0010111","lui":"0110111"}
 jtype={"jal":"1101111"}
 
-#Now, i or some variable will be iterating through readlines of the text file
-#Therefore, assuming a dummy "i" here
-i=str()
+#Dummy readlines
+L=[]
+
 #dummy dict for registers
 reg={}
 
@@ -42,23 +12,71 @@ labels={}
 lines=[]
 count=0
 
-j=i.split()
-'''
-if j[0][-1]!=":":
-    j.insert(0,"")
+#Checking if last line is virutal halt or not
+if L[-1]!="beq zero,zero,0":
+    print("Error: No Termination of Program")
+    L=[]
 else:
-  labels[j[0]]=count
-'''
+    #Two loops will be implemented, first here to check for labels and empty lines
+    for i in range(len(L)):
+        j=L[i].split()
+        if j==[]:
+            continue
+        if j[0][-1]!=":":
+            j.insert(0,"")
+        else:
+            labels[j[0]]=count
+        L[i]=j
 
-if j[1] in utype:
-  op=j[2].split(",")
-  line=binary(op[1],20)+reg[op[0]]+utype[j[1]]
-  lines.append(line)
-elif j[1] in jtype:
-  op=j[2].split(",")
-  line=binary(op[1],20)+reg[op[0]]+jtype[j[1]]    
-  lines.append(line)
-
+    #second here to start assemblin
+    for j in L:
+        if j[1] in utype:
+            if len(j)!=3:
+                print("Error: Invalid Instruction Syntax")
+                L=[]
+                break
+            op=j[2].split(",")
+            if op[0] not in reg:
+                print("Error: Invalid Register")
+                L=[]
+                break
+            elif len(op)!=2:
+                print("Error: Inavlid Instruction Syntax")
+                L=[]
+                break
+            elif op[1]>(2**19)-1 or op[1]<-(2**19):
+                print("Error: Immediate value out of range")
+                L=[]
+                break
+            else:
+                line=binary(op[1],20)+reg[op[0]]+utype[j[1]]
+                lines.append(line)
+        elif j[1] in jtype:
+            if len(j)!=3:
+                print("Error: Invalid Instruction Syntax")
+                L=[]
+                break
+            op=j[2].split(",")
+            if op[0] not in reg:
+                print("Error: Invalid Register")
+                L=[]
+                break
+            elif len(op)!=2:
+                print("Error: Inavlid Instruction Syntax")
+                L=[]
+                break
+            elif op[1]>(2**19)-1 or op[1]<-(2**19):
+                print("Error: Immediate value out of range")
+                L=[]
+                break
+            else:
+                line=binary(op[1],20)+reg[op[0]]+jtype[j[1]]
+                lines.append(line)
+        else:
+            print("Error: Invalid Instruction")
+            L=[]
+            break
+#End of u and j type instructions
 
 #I & S type Instruction
 itype = {'lw': ('0000011', '010'), 'addi': ('0010011', '000'), 'sltiu': ('0010011', '011'), 'jalr': ('1100111', '000')}
