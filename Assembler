@@ -206,8 +206,9 @@ for line in lines:
 # end of B type instructions
 
 #R-Type Instructions
+
 def conversion(instruction,rd,rs1,rs2):
-    opcode={
+    opcode= {
             'add':'0110011',
             'sub':'0110011',
             'sll':'0110011',
@@ -218,7 +219,7 @@ def conversion(instruction,rd,rs1,rs2):
             'or':'0110011',
             'and':'0110011'
             }
-    func3={
+    func3= {
             'add':'000',
             'sub':'000',
             'sll':'001',
@@ -229,7 +230,7 @@ def conversion(instruction,rd,rs1,rs2):
             'or':'110',
             'and':'111'
             }
-    func7={
+    func7= {
             'add':'0000000',
             'sub':'0100000',
             'sll':'0000000',
@@ -240,7 +241,7 @@ def conversion(instruction,rd,rs1,rs2):
             'or':'0000000',
             'and':'0000000'
             }
-    registers={
+    registers= {
                 "zero":'00000',
                 "ra":'00001',
                 "sp":'00010',
@@ -274,24 +275,50 @@ def conversion(instruction,rd,rs1,rs2):
                 "t4":'11101',
                 "t5":'11110',
                 "t6":'11111'
-            }
+                }
+    if (rd not in registers or rs1 not in registers or rs2 not in registers):
+        global flag
+        flag = 1
+        return "Invalid register"
+    global Result
     op=opcode[instruction]
     f3=func3[instruction]
     f7=func7[instruction]
     regd=registers[rd]
     reg1=registers[rs1]
     reg2=registers[rs2]
-    binary=f7+reg2+reg1+f3+regd+op
-    return binary
+    binary=f7+reg2+reg1+f3+regd+op+"\n"
+    Result.append(binary)
+    
 rtype=['add','sub','sll','slt','sltu','xor','srl','or','and']
-file=open("file.txt",'r')
-lines=file.readlines()
-for i in lines:
-    b=i.split()
-    if (b[0] in rtype):
-        c=b[1].split(',')
-        a=conversion(b[0],c[0],c[1],c[2])
-        print (a)
-file.close()
+flag=0
+Result=[]
+r_file=open("Input_file.txt",'r')
+lines=r_file.readlines()
+if lines[-1]!="beq zero,zero,0\n":
+    print("Virtual Halt not present as the last instruction")
+else:
+    for i in lines:
+        b=i.split()
+        if len(b)!=2:
+            flag=1
+            print("Invalid number of arguments")
+            break
+        elif (b[0] in rtype):
+            c=b[1].split(',')
+            if len(c)!=3:
+                flag=1
+                print("Invalid number of arguments")
+                break
+            else:
+                conversion(b[0],c[0],c[1],c[2])
+        #else:
+         #   print("Invalid Instruction")
+r_file.close()
+
+w_file=open("Output_file.txt",'w')
+if flag==0:
+    w_file.writelines(Result)
+w_file.close()
 
 #end of R-type instructions
