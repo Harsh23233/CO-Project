@@ -1,101 +1,40 @@
-#utype and jtype portion
-utype={"auipc":"0010111","lui":"0110111"}
-jtype={"jal":"1101111"}
+import sys
+def r_type(instruction, rd, rs1, rs2, register):
+    opcode = {
+    'add': '0110011', 'sub': '0110011', 'sll': '0110011', 'slt': '0110011',
+    'sltu': '0110011', 'xor': '0110011', 'srl': '0110011', 'or': '0110011',
+    'and': '0110011'
+    }
+    func3 = {
+    'add': '000', 'sub': '000', 'sll': '001', 'slt': '010', 'sltu': '011',
+    'xor': '100', 'srl': '101', 'or': '110', 'and': '111'
+    }
+    func7 = {
+    'add': '0000000', 'sub': '0100000', 'sll': '0000000', 'slt': '0000000',
+    'sltu': '0000000', 'xor': '0000000', 'srl': '0000000', 'or': '0000000',
+    'and': '0000000'
+    }
 
-#Dummy readlines
-L=[]
-
-#dummy dict for registers
-reg={}
-
-labels={}
-lines=[]
-count=0
-
-#Checking if last line is virutal halt or not
-if L[-1]!="beq zero,zero,0":
-    print("Error: No Termination of Program")
-    L=[]
-else:
-    #Two loops will be implemented, first here to check for labels
-    for i in range(len(L)):
-        j=L[i].split()
-    if j==[]:
-        continue
-    if len(j)>3:
-        print("Error: Invalid Instruction")
-        break
-    if j[0][-1]==":":
-        for k in j[0][:-1]:
-            if not k.isalnum() and k!="_":
-                print("Error: Invalid Label Name")
-                break
-        del j[0]
-    L[i]=j
-    else:
-        #second here to start assemblin
-        for j in L:
-            if j[1] in utype:
-                if len(j)!=3:
-                    print("Error: Invalid Instruction Syntax")
-                    lines=[]
-                    break
-                op=j[2].split(",")
-                if op[0] not in reg:
-                    print("Error: Invalid Register")
-                    lines=[]
-                    break
-                elif len(op)!=2:
-                    print("Error: Inavlid Instruction Syntax")
-                    lines=[]
-                    break
-                elif int(op[1])>(2**19)-1 or int(op[1])<-(2**19):
-                    print("Error: Immediate value out of range")
-                    lines=[]
-                    break
-                else:
-                    line=decimal_to_binary(int(op[1]),20)+reg[op[0]]+utype[j[1]]
-                    lines.append(line)
-            elif j[1] in jtype:
-                if len(j)!=3:
-                    print("Error: Invalid Instruction Syntax")
-                    lines=[]
-                    break
-                op=j[2].split(",")
-                if op[0] not in reg:
-                    print("Error: Invalid Register")
-                    lines=[]
-                    break
-                elif len(op)!=2:
-                    print("Error: Inavlid Instruction Syntax")
-                    lines=[]
-                    break
-                elif int(op[1])>(2**19)-1 or int(op[1])<-(2**19):
-                    print("Error: Immediate value out of range")
-                    lines=[]
-                    break
-                else:
-                    line=decimal_to_binary(int(op[1]),20)+reg[op[0]]+jtype[j[1]]
-                    lines.append(line)
-            else:
-                print("Error: Invalid Instruction")
-                lines=[]
-                break
-#End of u and j type instructions
-
-#I & S type Instruction
-itype = {'lw': ('0000011', '010'), 'addi': ('0010011', '000'), 'sltiu': ('0010011', '011'), 'jalr': ('1100111', '000')}
-stype = {'sw': ('0100011', '010')}
-reg = {'sp': '01000', 'ra': '01001', 's0': '10000', 's1': '10001', 'a0': '10010', 'a1': '10011', 'a2': '10100', 'a3': '10101', 'a4': '10110', 'a5': '10111', 'a6': '11000', 'a7': '11001', 's2': '11010', 's3': '11011', 's4': '11100', 's5': '11101', 's6': '11110', 's7': '11111'}
+    if rd not in register or rs1 not in register or rs2 not in register:
+        return None, "Invalid register"
+    op = opcode[instruction]
+    f3 = func3[instruction]
+    f7 = func7[instruction]
+    regd = register[rd]
+    reg1 = register[rs1]
+    reg2 = register[rs2]
+    binary = f7 + reg2 + reg1 + f3 + regd + op
+    return binary, None
 
 def decimal_to_binary(n, length):
-    return format(n if n >= 0 else (1 << length) + n, f'0{length}b')
+        return format(n if n >= 0 else (1 << length) + n, f'0{length}b')
+
 def check_input_format(line, inst_type):
     if inst_type == 'lw':
         return len(line.split(',')) == 2 and ' ' in line.split(',')[0] and '(' in line.split(',')[1] and ')' in line.split(',')[1]
     elif inst_type in ['addi', 'sltiu', 'jalr']:
         parts = line.split(',')
-        return len(parts) == 3 and ' ' in parts[0] and ' ' in parts[1]
+        return len(parts) == 3 and ' ' in parts[0]
     elif inst_type == 'sw':
         parts = line.split(',')
         return len(parts) == 2 and ' ' in parts[0] and '(' in parts[1] and ')' in parts[1]
@@ -127,83 +66,9 @@ def s_code(x):
     opcode, funct3 = stype[x[0]]
     return imm[:7] + register[x[1].split(',')[0]] + register[rs1] + funct3 + imm[7:] + opcode
 
-lines = ['sw ra,95(sp)', 'lw a5,32(sp)']
-output = []
-for line in L:
-    inst = line.split()
-    if inst[0] in stype.keys() and check_input_format(line, 'sw'):
-        result = s_code(inst)
-        if result == "Error":
-            print("Invalid")
-            break
-        output.append(result)
-    elif inst[0] in itype.keys() and check_input_format(line, inst[0]):
-        result = i_code(inst)
-        if result == "Error":
-            print("Invalid")
-            break
-        output.append(result)
-    else:
-        print("Invalid")
-        break
-
-if len(output) == len(L):
-    with open("binaryfile", "w") as f:
-        f.write("\n".join(output))
-
-#end here
-
-#B type instructions
-import sys
-output=[]
-fnct3={
-    "beq":'000',
-    "bne":'001',
-    "blt":'100',
-    "bge":'101',
-    "bltu":'110',
-    "bgeu":'111'
-}
-
-register={
-    "zero":'00000',
-    "ra":'00001',
-    "sp":'00010',
-    "gp":'00011',
-    "tp":'00100',
-    "t0":'00101',
-    "t1":'00110',
-    "t2":'00111',
-    "s0":'01000',
-    "fp":'01000',
-    "s1":'01001',
-    "a0":'01010',
-    "a1":'01011',
-    "a2":'01100',
-    "a3":'01101',
-    "a4":'01110',
-    "a5":'01111',
-    "a6":'10000',
-    "a7":'10001',
-    "s2":'10010',
-    "s3":'10011',
-    "s4":'10100',
-    "s5":'10101',
-    "s6":'10110',
-    "s7":'10111',
-    "s8":'11000',
-    "s9":'11001',
-    "s10":'11010',
-    "s11":'11011',
-    "t3":'11100',
-    "t4":'11101',
-    "t5":'11110',
-    "t6":'11111'
-}
-
 def b_type_errors(list1,list2):
         for line in list1:
-                if line not in fnct3.keys():
+                if line not in btype.keys():
                         return 1
         for i in range(0,2):
                 if list2[i] not in register.keys():
@@ -216,44 +81,20 @@ def b_type(list1,list2):
         global output
         flag=b_type_errors(list1,list2)
         if(flag):
-                print("Error")
-                return
+                print("Invalid")
+                return flag
         temp = ''
         label = decimal_to_binary(int(list2[2]), 16)
         imm1 = label[-5:]
         imm2 = label[4:11]
-        temp += (imm2 + register[list2[1]] + register[list2[0]] + fnct3[list1[0]] + imm1 + '1100011')
+        temp += (imm2 + register[list2[1]] + register[list2[0]] + btype[list1[0]] + imm1 + '1100011')
         if(temp=="00000000000000000000000001100011"):
-                for _ in output:
-                        print(_)
                 print('virtual halt detected')
                 sys.exit()
         output.append(temp)
+        return flag
 
-typical input
-#list1=["beq"]
-#list2=["s0",'s1','12']
-#b_type(list1,list2)
-#for _ in output:
-#        print(type(_))
-
-# end of B type instructions
-
-#R-Type Instructions
-
-def conversion(instruction, rd, rs1, rs2, registers, opcode, func3, func7):
-    if rd not in registers or rs1 not in registers or rs2 not in registers:
-        return None, "Invalid register"
-    op = opcode[instruction]
-    f3 = func3[instruction]
-    f7 = func7[instruction]
-    regd = registers[rd]
-    reg1 = registers[rs1]
-    reg2 = registers[rs2]
-    binary = f7 + reg2 + reg1 + f3 + regd + op + "\n"
-    return binary, None
-
-registers = {
+register = {
     "zero": '00000', "ra": '00001', "sp": '00010', "gp": '00011', "tp": '00100',
     "t0": '00101', "t1": '00110', "t2": '00111', "s0": '01000', "fp": '01000',
     "s1": '01001', "a0": '01010', "a1": '01011', "a2": '01100', "a3": '01101',
@@ -262,60 +103,132 @@ registers = {
     "s8": '11000', "s9": '11001', "s10": '11010', "s11": '11011', "t3": '11100',
     "t4": '11101', "t5": '11110', "t6": '11111'
 }
-opcode = {
-    'add': '0110011', 'sub': '0110011', 'sll': '0110011', 'slt': '0110011',
-    'sltu': '0110011', 'xor': '0110011', 'srl': '0110011', 'or': '0110011',
-    'and': '0110011'
-}
-func3 = {
-    'add': '000', 'sub': '000', 'sll': '001', 'slt': '010', 'sltu': '011',
-    'xor': '100', 'srl': '101', 'or': '110', 'and': '111'
-}
-func7 = {
-    'add': '0000000', 'sub': '0100000', 'sll': '0000000', 'slt': '0000000',
-    'sltu': '0000000', 'xor': '0000000', 'srl': '0000000', 'or': '0000000',
-    'and': '0000000'
-}
 
 rtype = ['add', 'sub', 'sll', 'slt', 'sltu', 'xor', 'srl', 'or', 'and']
-Result = []
+itype = {'lw': ('0000011', '010'), 'addi': ('0010011', '000'), 'sltiu': ('0010011', '011'), 'jalr': ('1100111', '000')}
+stype = {'sw': ('0100011', '010')}
+btype={"beq":'000',"bne":'001',"blt":'100',"bge":'101',"bltu":'110',"bgeu":'111'}
+utype={"auipc":"0010111","lui":"0110111"}
+jtype={"jal":"1101111"}
+output = []
 valid_instructions = True
 
 with open("Input_file.txt", 'r') as file:
     lines = file.readlines()
-    if lines[-1] != "beq zero,zero,0\n":
-        print("Virtual Halt not present as the last instruction")
+    if 'beq zero,zero,0\n' not in lines:
+        valid_instructions=False
     else:
-        for i in lines:
-            b = i.split()
-            if len(b) != 2:
-                valid_instructions = False
-                print("Invalid number of arguments")
+        for i in range(len(lines)):
+            j=lines[i].split()
+            if j==[]:
+                continue
+            elif len(j)>3:
+                valid_instructions=False
+                print("Error: Invalid Instruction")
                 break
-            elif b[0] in rtype:
-                c = b[1].split(',')
-                if len(c) != 3:
+            elif j[0][-1]==":":
+                for k in j[0][:-1]:
+                    if not k.isalnum() and k!="_":
+                        valid_instructions=False
+                        print("Error: Invalid Label Name")
+                        break
+                del j[0]
+            lines[i]=j
+        else:
+            for i in lines:
+                print(i[0])
+                if len(i) != 2:
                     valid_instructions = False
                     print("Invalid number of arguments")
                     break
-                else:
-                    binary, error = conversion(b[0], c[0], c[1], c[2], registers, opcode, func3, func7)
-                    if error:
+                elif i[0] in rtype:
+                    c = i[1].split(',')
+                    if len(c) != 3:
                         valid_instructions = False
-                        print(error)
+                        print("Invalid number of arguments")
                         break
-                    if binary:
-                        Result.append(binary)
                     else:
-                        valid_instructions = False
-                        print("Invalid register")
+                        binary, error = r_type(i[0], c[0], c[1], c[2], register)
+                        if error:
+                            valid_instructions = False
+                            print(error)
+                            break
+                        elif binary:
+                            output.append(binary)
+                        else:
+                            valid_instructions = False
+                            print("Invalid register")
+                            break
+                elif i[0] in stype.keys() and check_input_format(i[0]+' '+i[1], 'sw'):
+                    result = s_code(i)
+                    if result == "Error":
+                        valid_instructions=False
+                        print("Invalid")
                         break
-            '''else:
-                valid_instructions = False
-                print("Invalid Instruction")'''
+                    output.append(result)
+                elif i[0] in itype.keys() and check_input_format(i[0]+' '+i[1], i[0]):
+                    result = i_code(i)
+                    if result == "Error":
+                        valid_instructions=False
+                        print("Invalid")
+                        break
+                    output.append(result)
+                elif i[0] in btype.keys():
+                    c=i[1].split(',')
+                    if len(c)!=3:
+                        valid_instructions=False
+                        print("Invalid number of arguments")
+                        break
+                    else:
+                        valid_instructions=b_type(i[0],i[1])
+                if i[0] in utype:
+                    if len(i)!=2:
+                        print("Error: Invalid Instruction Syntax")
+                        valid_instructions=False
+                        break
+                    op=i[1].split(",")
+                    if op[0] not in register:
+                        print("Error: Invalid Register")
+                        valid_instructions=False
+                        break
+                    elif len(op)!=2:
+                        print("Error: Inavlid Instruction Syntax")
+                        valid_instructions=False
+                        break
+                    elif int(op[1])>(2**19)-1 or int(op[1])<-(2**19):
+                        print("Error: Immediate value out of range")
+                        valid_instructions=False
+                        break
+                    else:
+                        line=decimal_to_binary(int(op[1]),20)+register[op[0]]+utype[i[0]]
+                        output.append(line)
+                elif i[0] in jtype:
+                    if len(i)!=2:
+                        print("Error: Invalid Instruction Syntax")
+                        valid_instructions=False
+                        break
+                    op=i[1].split(",")
+                    if op[0] not in reg:
+                        print("Error: Invalid Register")
+                        valid_instructions=False
+                        break
+                    elif len(op)!=2:
+                        print("Error: Inavlid Instruction Syntax")
+                        valid_instructions=False
+                        break
+                    elif int(op[1])>(2**19)-1 or int(op[1])<-(2**19):
+                        print("Error: Immediate value out of range")
+                        valid_instructions=False
+                        break
+                    else:
+                        line=decimal_to_binary(int(op[1]),20)+register[op[0]]+jtype[i[1]]
+                        output.append(line)
+                else:
+                    print("Error: Invalid Instruction")
+                    valid_instructions=False
+                    print(i)
+                    break
 
 if valid_instructions:
-    with open("Output_file.txt", 'w') as w_file:
-        w_file.writelines(Result)
-
-#end of R-type instructions
+    with open("binaryfile", "w") as f:
+        f.write("\n".join(output))
