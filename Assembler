@@ -84,8 +84,7 @@ stype = {'sw': ('0100011', '010')}
 reg = {'sp': '01000', 'ra': '01001', 's0': '10000', 's1': '10001', 'a0': '10010', 'a1': '10011', 'a2': '10100', 'a3': '10101', 'a4': '10110', 'a5': '10111', 'a6': '11000', 'a7': '11001', 's2': '11010', 's3': '11011', 's4': '11100', 's5': '11101', 's6': '11110', 's7': '11111'}
 
 def decimal_to_binary(n, length):
-        return format(n if n >= 0 else (1 << length) + n, f'0{length}b')
-
+    return format(n if n >= 0 else (1 << length) + n, f'0{length}b')
 def check_input_format(line, inst_type):
     if inst_type == 'lw':
         return len(line.split(',')) == 2 and ' ' in line.split(',')[0] and '(' in line.split(',')[1] and ')' in line.split(',')[1]
@@ -98,42 +97,55 @@ def check_input_format(line, inst_type):
     return False
 
 def check_register(reg_name):
-    return reg_name.split('(')[0].strip() in reg if '(' in reg_name and ')' in reg_name else reg_name in reg
+    return reg_name in register
 
 def i_code(x):
     opcode, funct3 = itype[x[0]]
     if x[0] == 'lw':
-        rs1, imm1 = x[1].split(',')[1].split('(')[1].split(')')[0].strip(), x[1].split(',')[1].split('(')[0].strip()
+        rs1, imm1 = x[1].split(',')[1].split('(')[1][:-1], x[1].split(',')[1].split('(')[0]
         if not all(map(check_register, [rs1, x[1].split(',')[0]])) or int(imm1)<-2048 or int(imm1)>=2048:
             return "Error"
         imm = decimal_to_binary(int(imm1), 12)
-        return str(imm) + reg[rs1] + funct3 + reg[x[1].split(',')[0].strip()] + opcode
+        return str(imm) + register[rs1] + funct3 + register[x[1].split(',')[0]] + opcode
     elif x[0] in ['addi', 'sltiu', 'jalr']:
-        if not all(map(check_register, x[1].split(','))) or int(x[1].split(',')[2].strip())<-2048 or int(x[1].split(',')[2].strip())>=2048:
+        if not all(map(check_register, x[1].split(','))) or int(x[1].split(',')[2])<-2048 or int(x[1].split(',')[2])>=2048:
             return "Error"
-        imm = decimal_to_binary(int(x[1].split(',')[2].strip()), 12)
-        return imm + reg[x[1].split(',')[0].strip()] + funct3 + reg[x[1].split(',')[1].strip()] + opcode
+        imm = decimal_to_binary(int(x[1].split(',')[2]), 12)
+        return imm + register[x[1].split(',')[0]] + funct3 + register[x[1].split(',')[1]] + opcode
     return "Error"
 
 def s_code(x):
-    rs1, imm1 = x[1].split(',')[1].split('(')[1].split(')')[0].strip(), x[1].split(',')[1].split('(')[0].strip()
+    rs1, imm1 = x[1].split(',')[1].split('(')[1][:-1], x[1].split(',')[1].split('(')[0]
     if not all(map(check_register, [rs1, x[1].split(',')[0]])) or int(imm1)<-2048 or int(imm1)>=2048:
         return "Error"
     imm = decimal_to_binary(int(imm1), 12)
     opcode, funct3 = stype[x[0]]
-    return imm[:7] + reg[x[1].split(',')[0].strip()] + reg[rs1] + funct3 + imm[7:] + opcode
+    return imm[:7] + register[x[1].split(',')[0]] + register[rs1] + funct3 + imm[7:] + opcode
 
 lines = ['sw ra,95(sp)', 'lw a5,32(sp)']
 output = []
-for line in lines:
+for line in L:
     inst = line.split()
-    if inst[0] in stype and check_input_format(line, 'sw'):
-        output.append(s_code(inst))
-    elif inst[0] in itype and check_input_format(line, inst[0]):
-        output.append(i_code(inst))
+    if inst[0] in stype.keys() and check_input_format(line, 'sw'):
+        result = s_code(inst)
+        if result == "Error":
+            print("Invalid")
+            break
+        output.append(result)
+    elif inst[0] in itype.keys() and check_input_format(line, inst[0]):
+        result = i_code(inst)
+        if result == "Error":
+            print("Invalid")
+            break
+        output.append(result)
     else:
-        output.append("Error")
-print("Invalid" if "Error" in output else "\n".join(output))
+        print("Invalid")
+        break
+
+if len(output) == len(L):
+    with open("binaryfile", "w") as f:
+        f.write("\n".join(output))
+
 #end here
 
 #B type instructions
