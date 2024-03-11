@@ -17,7 +17,7 @@ if L[-1]!="beq zero,zero,0":
     print("Error: No Termination of Program")
     L=[]
 else:
-    #Two loops will be implemented, first here to check for labels and empty lines
+    #Two loops will be implemented, first here to check for labels
     for i in range(len(L)):
         j=L[i].split()
         if j==[]:
@@ -25,57 +25,60 @@ else:
         if j[0][-1]!=":":
             j.insert(0,"")
         else:
-            labels[j[0]]=count
+            for k in j[0][:-1]:
+                if not k.isalnum() and k!="_":
+                    print("Error: Invalid Label Name")
+                    break
         L[i]=j
-
-    #second here to start assemblin
-    for j in L:
-        if j[1] in utype:
-            if len(j)!=3:
-                print("Error: Invalid Instruction Syntax")
-                L=[]
-                break
-            op=j[2].split(",")
-            if op[0] not in reg:
-                print("Error: Invalid Register")
-                L=[]
-                break
-            elif len(op)!=2:
-                print("Error: Inavlid Instruction Syntax")
-                L=[]
-                break
-            elif op[1]>(2**19)-1 or op[1]<-(2**19):
-                print("Error: Immediate value out of range")
-                L=[]
-                break
+    else:
+        #second here to start assemblin
+        for j in L:
+            if j[1] in utype:
+                if len(j)!=3:
+                    print("Error: Invalid Instruction Syntax")
+                    lines=[]
+                    break
+                op=j[2].split(",")
+                if op[0] not in reg:
+                    print("Error: Invalid Register")
+                    lines=[]
+                    break
+                elif len(op)!=2:
+                    print("Error: Inavlid Instruction Syntax")
+                    lines=[]
+                    break
+                elif op[1]>(2**19)-1 or op[1]<-(2**19):
+                    print("Error: Immediate value out of range")
+                    lines=[]
+                    break
+                else:
+                    line=decimal_to_binary(op[1],20)+reg[op[0]]+utype[j[1]]
+                    lines.append(line)
+            elif j[1] in jtype:
+                if len(j)!=3:
+                    print("Error: Invalid Instruction Syntax")
+                    lines=[]
+                    break
+                op=j[2].split(",")
+                if op[0] not in reg:
+                    print("Error: Invalid Register")
+                    lines=[]
+                    break
+                elif len(op)!=2:
+                    print("Error: Inavlid Instruction Syntax")
+                    lines=[]
+                    break
+                elif op[1]>(2**19)-1 or op[1]<-(2**19):
+                    print("Error: Immediate value out of range")
+                    lines=[]
+                    break
+                else:
+                    line=decimal_to_binary(op[1],20)+reg[op[0]]+jtype[j[1]]
+                    lines.append(line)
             else:
-                line=binary(op[1],20)+reg[op[0]]+utype[j[1]]
-                lines.append(line)
-        elif j[1] in jtype:
-            if len(j)!=3:
-                print("Error: Invalid Instruction Syntax")
-                L=[]
+                print("Error: Invalid Instruction")
+                lines=[]
                 break
-            op=j[2].split(",")
-            if op[0] not in reg:
-                print("Error: Invalid Register")
-                L=[]
-                break
-            elif len(op)!=2:
-                print("Error: Inavlid Instruction Syntax")
-                L=[]
-                break
-            elif op[1]>(2**19)-1 or op[1]<-(2**19):
-                print("Error: Immediate value out of range")
-                L=[]
-                break
-            else:
-                line=binary(op[1],20)+reg[op[0]]+jtype[j[1]]
-                lines.append(line)
-        else:
-            print("Error: Invalid Instruction")
-            L=[]
-            break
 #End of u and j type instructions
 
 #I & S type Instruction
