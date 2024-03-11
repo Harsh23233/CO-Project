@@ -20,16 +20,18 @@ else:
     #Two loops will be implemented, first here to check for labels
     for i in range(len(L)):
         j=L[i].split()
-        if j==[]:
-            continue
-        if j[0][-1]!=":":
-            j.insert(0,"")
-        else:
-            for k in j[0][:-1]:
-                if not k.isalnum() and k!="_":
-                    print("Error: Invalid Label Name")
-                    break
-        L[i]=j
+    if j==[]:
+        continue
+    if len(j)>3:
+        print("Error: Invalid Instruction")
+        break
+    if j[0][-1]==":":
+        for k in j[0][:-1]:
+            if not k.isalnum() and k!="_":
+                print("Error: Invalid Label Name")
+                break
+        del j[0]
+    L[i]=j
     else:
         #second here to start assemblin
         for j in L:
