@@ -201,118 +201,81 @@ for line in lines:
 
 #R-Type Instructions
 
-def conversion(instruction,rd,rs1,rs2):
-    opcode= {
-            'add':'0110011',
-            'sub':'0110011',
-            'sll':'0110011',
-            'slt':'0110011',
-            'sltu':'0110011',
-            'xor':'0110011',
-            'srl':'0110011',
-            'or':'0110011',
-            'and':'0110011'
-            }
-    func3= {
-            'add':'000',
-            'sub':'000',
-            'sll':'001',
-            'slt':'010',
-            'sltu':'011',
-            'xor':'100',
-            'srl':'101',
-            'or':'110',
-            'and':'111'
-            }
-    func7= {
-            'add':'0000000',
-            'sub':'0100000',
-            'sll':'0000000',
-            'slt':'0000000',
-            'sltu':'0000000',
-            'xor':'0000000',
-            'srl':'0000000',
-            'or':'0000000',
-            'and':'0000000'
-            }
-    registers= {
-                "zero":'00000',
-                "ra":'00001',
-                "sp":'00010',
-                "gp":'00011',
-                "tp":'00100',
-                "t0":'00101',
-                "t1":'00110',
-                "t2":'00111',
-                "s0":'01000',
-                "fp":'01000',
-                "s1":'01001',
-                "a0":'01010',
-                "a1":'01011',
-                "a2":'01100',
-                "a3":'01101',
-                "a4":'01110',
-                "a5":'01111',
-                "a6":'10000',
-                "a7":'10001',
-                "s2":'10010',
-                "s3":'10011',
-                "s4":'10100',
-                "s5":'10101',
-                "s6":'10110',
-                "s7":'10111',
-                "s8":'11000',
-                "s9":'11001',
-                "s10":'11010',
-                "s11":'11011',
-                "t3":'11100',
-                "t4":'11101',
-                "t5":'11110',
-                "t6":'11111'
-                }
-    if (rd not in registers or rs1 not in registers or rs2 not in registers):
-        global flag
-        flag = 1
-        return "Invalid register"
-    global Result
-    op=opcode[instruction]
-    f3=func3[instruction]
-    f7=func7[instruction]
-    regd=registers[rd]
-    reg1=registers[rs1]
-    reg2=registers[rs2]
-    binary=f7+reg2+reg1+f3+regd+op+"\n"
-    Result.append(binary)
-    
-rtype=['add','sub','sll','slt','sltu','xor','srl','or','and']
-flag=0
-Result=[]
-r_file=open("Input_file.txt",'r')
-lines=r_file.readlines()
-if lines[-1]!="beq zero,zero,0\n":
-    print("Virtual Halt not present as the last instruction")
-else:
-    for i in lines:
-        b=i.split()
-        if len(b)!=2:
-            flag=1
-            print("Invalid number of arguments")
-            break
-        elif (b[0] in rtype):
-            c=b[1].split(',')
-            if len(c)!=3:
-                flag=1
+def conversion(instruction, rd, rs1, rs2, registers, opcode, func3, func7):
+    if rd not in registers or rs1 not in registers or rs2 not in registers:
+        return None, "Invalid register"
+    op = opcode[instruction]
+    f3 = func3[instruction]
+    f7 = func7[instruction]
+    regd = registers[rd]
+    reg1 = registers[rs1]
+    reg2 = registers[rs2]
+    binary = f7 + reg2 + reg1 + f3 + regd + op + "\n"
+    return binary, None
+
+registers = {
+    "zero": '00000', "ra": '00001', "sp": '00010', "gp": '00011', "tp": '00100',
+    "t0": '00101', "t1": '00110', "t2": '00111', "s0": '01000', "fp": '01000',
+    "s1": '01001', "a0": '01010', "a1": '01011', "a2": '01100', "a3": '01101',
+    "a4": '01110', "a5": '01111', "a6": '10000', "a7": '10001', "s2": '10010',
+    "s3": '10011', "s4": '10100', "s5": '10101', "s6": '10110', "s7": '10111',
+    "s8": '11000', "s9": '11001', "s10": '11010', "s11": '11011', "t3": '11100',
+    "t4": '11101', "t5": '11110', "t6": '11111'
+}
+opcode = {
+    'add': '0110011', 'sub': '0110011', 'sll': '0110011', 'slt': '0110011',
+    'sltu': '0110011', 'xor': '0110011', 'srl': '0110011', 'or': '0110011',
+    'and': '0110011'
+}
+func3 = {
+    'add': '000', 'sub': '000', 'sll': '001', 'slt': '010', 'sltu': '011',
+    'xor': '100', 'srl': '101', 'or': '110', 'and': '111'
+}
+func7 = {
+    'add': '0000000', 'sub': '0100000', 'sll': '0000000', 'slt': '0000000',
+    'sltu': '0000000', 'xor': '0000000', 'srl': '0000000', 'or': '0000000',
+    'and': '0000000'
+}
+
+rtype = ['add', 'sub', 'sll', 'slt', 'sltu', 'xor', 'srl', 'or', 'and']
+Result = []
+valid_instructions = True
+
+with open("Input_file.txt", 'r') as file:
+    lines = file.readlines()
+    if lines[-1] != "beq zero,zero,0\n":
+        print("Virtual Halt not present as the last instruction")
+    else:
+        for i in lines:
+            b = i.split()
+            if len(b) != 2:
+                valid_instructions = False
                 print("Invalid number of arguments")
                 break
-            else:
-                conversion(b[0],c[0],c[1],c[2])
-        #else:
-         #   print("Invalid Instruction")
-r_file.close()
+            elif b[0] in rtype:
+                c = b[1].split(',')
+                if len(c) != 3:
+                    valid_instructions = False
+                    print("Invalid number of arguments")
+                    break
+                else:
+                    binary, error = conversion(b[0], c[0], c[1], c[2], registers, opcode, func3, func7)
+                    if error:
+                        valid_instructions = False
+                        print(error)
+                        break
+                    if binary:
+                        Result.append(binary)
+                    else:
+                        valid_instructions = False
+                        print("Invalid register")
+                        break
+            '''else:
+                valid_instructions = False
+                print("Invalid Instruction")'''
 
-w_file=open("Output_file.txt",'w')
-if flag==0:
-    w_file.writelines(Result)
-w_file.close()
+if valid_instructions:
+    with open("Output_file.txt", 'w') as w_file:
+        w_file.writelines(Result)
 
 #end of R-type instructions
