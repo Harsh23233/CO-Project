@@ -141,9 +141,7 @@ else:
         if newline!=[]:
             for i in newline:
                 del lines[i]
-        print(lines)
         for i in lines:
-            print(i)
             if len(i) != 2:
                 valid_instructions = False
                 print("Invalid number of arguments")
@@ -189,6 +187,7 @@ else:
                 else:
                     valid_instructions=b_type([i[0]],c)
                     if(valid_instructions=="00000000000000000000000001100011"):
+                        output.append(valid_instructions)
                         break
             elif i[0] in utype:
                 if len(i)!=2:
@@ -210,9 +209,7 @@ else:
                     break
                 else:
                     s=decimal_to_binary(int(op[1]),32)
-                    print(s)
                     line=s[0:20]+register[op[0]]+utype[i[0]]
-                    print(line)
                     output.append(line)
             elif i[0] in jtype:
                 if len(i)!=2:
@@ -220,7 +217,7 @@ else:
                     valid_instructions=False
                     break
                 op=i[1].split(",")
-                if op[0] not in reg:
+                if op[0] not in register:
                     print("Error: Invalid Register")
                     valid_instructions=False
                     break
@@ -234,12 +231,11 @@ else:
                     break
                 else:
                     s= decimal_to_binary(int(op[1]),20)
-                    line=s[8:-1]+s[0:9]+register[op[0]]+jtype[i[1]]
+                    line=s[8:-1]+s[0:9]+register[op[0]]+jtype[i[0]]
                     output.append(line)
             else:
                 print("Error: Invalid Instruction")
                 valid_instructions=False
-                print(i)
                 break
 file.close()
 if valid_instructions:
