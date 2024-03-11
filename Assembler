@@ -197,17 +197,51 @@ register={
 }
 
 # for input
+def check_errors(line):
+    errors = []
+    
+    # Check if instruction is valid
+    if line[0] not in fnct3:
+        errors.append("Invalid instruction: " + line[0])
+    
+    # Check number of arguments
+    if line[0] in ["beq", "bne", "blt", "bge", "bltu", "bgeu"]:
+        if len(line) != 4:
+            errors.append("Incorrect number of arguments for " + line[0])
+    
+    # Check if registers are valid
+    for reg in line[1:-1]:
+        if reg not in register:
+            errors.append("Invalid register: " + reg)
+    
+    return errors
+
+def process_input(lines):
+    global output
+    for line in lines:
+        errors = check_errors(line)
+        if errors:
+            print(errors[0])
+        else:
+            temp = ''
+            label = decimal_to_binary(int(line[3]), 20)
+            imm1 = label[-5:]
+            imm2 = label[4:11]
+            temp += (imm2 + register[line[2]] + register[line[1]] + fnct3[line[0]] + imm1 + '1100011')
+            if(temp=="00000000000000000000000001100011"):
+                for _ in output:
+                    print(_)
+                print('virtual halt detected')
+                exit
+            output.append(temp)
+
+# Take input lines from the user
 lines = [line.strip() for line in sys.stdin.readlines()]
 lines = [line for line in lines if line]
 lines = [line.split() for line in lines]
 lines = [[line[0]] + line[1].split(',') for line in lines]
-for line in lines:
-    temp = ''
-    label = decimal_to_binary(int(line[3]),20)
-    imm1 = label[-5:]
-    imm2 = label[4:11]
-    temp += (imm2 + register[line[2]] + register[line[1]] + fnct3[line[0]] + imm1 + '1100011')
-    print(temp)
+
+process_input(lines)
 
 # end of B type instructions
 
