@@ -47,21 +47,21 @@ def check_register(reg_name):
 def i_code(x):
     opcode, funct3 = itype[x[0]]
     if x[0] == 'lw':
-        rs1, imm1 = x[1].split(',')[1].split('(')[1][:-1], x[1].split(',')[1].split('(')[0]
-        if not all(map(check_register, [rs1, x[1].split(',')[0]])) or int(imm1)<-2048 or int(imm1)>=2048:
+        rs1, imm1,rs2 = x[1].split(',')[1].split('(')[1][:-1], x[1].split(',')[1].split('(')[0], x[1].split(',')[0]
+        if not check_register(rs1) or not check_register(rs2) or int(imm1)<-2048 or int(imm1)>=2048:   #checking validity of registers and if imm is in range or not
             return "Error"
         imm = decimal_to_binary(int(imm1), 12)
-        return str(imm) + register[rs1] + funct3 + register[x[1].split(',')[0]] + opcode
+        return str(imm) + register[rs1] + funct3 + register[rs2] + opcode
     elif x[0] in ['addi', 'sltiu', 'jalr']:
-        if not check_register(x[1].split(',')[0]) or not check_register(x[1].split(',')[1])  or int(x[1].split(',')[2])<-2048 or int(x[1].split(',')[2])>=2048:
+        if not check_register(x[1].split(',')[0]) or not check_register(x[1].split(',')[1]) or int(x[1].split(',')[2])<-2048 or int(x[1].split(',')[2])>=2048:
             return "Error"
         imm = decimal_to_binary(int(x[1].split(',')[2]), 12)
         return imm + register[x[1].split(',')[0]] + funct3 + register[x[1].split(',')[1]] + opcode
     return "Error"
 
 def s_code(x):
-    rs1, imm1 = x[1].split(',')[1].split('(')[1][:-1], x[1].split(',')[1].split('(')[0]
-    if not all(map(check_register, [rs1, x[1].split(',')[0]])) or int(imm1)<-2048 or int(imm1)>=2048:
+    rs1, imm1, rs2 = x[1].split(',')[1].split('(')[1][:-1], x[1].split(',')[1].split('(')[0], x[1].split(',')[0]
+    if not check_register(rs1) or not check_register(rs2) or int(imm1)<-2048 or int(imm1)>=2048:
         return "Error"
     imm = decimal_to_binary(int(imm1), 12)
     opcode, funct3 = stype[x[0]]
