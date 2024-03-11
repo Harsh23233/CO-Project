@@ -47,12 +47,12 @@ else:
                     print("Error: Inavlid Instruction Syntax")
                     lines=[]
                     break
-                elif op[1]>(2**19)-1 or op[1]<-(2**19):
+                elif int(op[1])>(2**19)-1 or int(op[1])<-(2**19):
                     print("Error: Immediate value out of range")
                     lines=[]
                     break
                 else:
-                    line=decimal_to_binary(op[1],20)+reg[op[0]]+utype[j[1]]
+                    line=decimal_to_binary(int(op[1]),20)+reg[op[0]]+utype[j[1]]
                     lines.append(line)
             elif j[1] in jtype:
                 if len(j)!=3:
@@ -68,12 +68,12 @@ else:
                     print("Error: Inavlid Instruction Syntax")
                     lines=[]
                     break
-                elif op[1]>(2**19)-1 or op[1]<-(2**19):
+                elif int(op[1])>(2**19)-1 or int(op[1])<-(2**19):
                     print("Error: Immediate value out of range")
                     lines=[]
                     break
                 else:
-                    line=decimal_to_binary(op[1],20)+reg[op[0]]+jtype[j[1]]
+                    line=decimal_to_binary(int(op[1]),20)+reg[op[0]]+jtype[j[1]]
                     lines.append(line)
             else:
                 print("Error: Invalid Instruction")
