@@ -199,44 +199,42 @@ register={
     "t6":'11111'
 }
 
-# for input
-def check_errors(line):
-    errors = []
-    
-    # Check if instruction is valid
-    if line[0] not in fnct3:
-        errors.append("Invalid instruction: " + line[0])
-    
-    # Check number of arguments
-    if line[0] in ["beq", "bne", "blt", "bge", "bltu", "bgeu"]:
-        if len(line) != 4:
-            errors.append("Incorrect number of arguments for " + line[0])
-    
-    # Check if registers are valid
-    for reg in line[1:-1]:
-        if reg not in register:
-            errors.append("Invalid register: " + reg)
-    
-    return errors
+def b_type_errors(list1,list2):
+        for line in list1:
+                if line not in fnct3.keys():
+                        return 1
+        for i in range(0,2):
+                if list2[i] not in register.keys():
+                        return 1        
+        if(int(list2[2])>2047 or int(list2[2])<-2048):
+                return 1
+        return 0
 
-def process_input(lines):
-    global output
-    for line in lines:
-        errors = check_errors(line)
-        if errors:
-            print(errors[0])
-        else:
-            temp = ''
-            label = decimal_to_binary(int(line[3]), 20)
-            imm1 = label[-5:]
-            imm2 = label[4:11]
-            temp += (imm2 + register[line[2]] + register[line[1]] + fnct3[line[0]] + imm1 + '1100011')
-            if(temp=="00000000000000000000000001100011"):
+def b_type(list1,list2):
+        global output
+        flag=b_type_errors(list1,list2)
+        if(flag):
+                print("Error")
+                return
+        temp = ''
+        label = decimal_to_binary(int(list2[2]), 16)
+        imm1 = label[-5:]
+        imm2 = label[4:11]
+        temp += (imm2 + register[list2[1]] + register[list2[0]] + fnct3[list1[0]] + imm1 + '1100011')
+        if(temp=="00000000000000000000000001100011"):
                 for _ in output:
-                    print(_)
+                        print(_)
                 print('virtual halt detected')
-                exit
-            output.append(temp)
+                sys.exit()
+        output.append(temp)
+
+typical input
+#list1=["beq"]
+#list2=["s0",'s1','12']
+#b_type(list1,list2)
+#for _ in output:
+#        print(type(_))
+
 
 # Take input lines from the user
 lines = [line.strip() for line in sys.stdin.readlines()]
