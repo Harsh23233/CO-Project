@@ -53,7 +53,7 @@ def i_code(x):
         imm = decimal_to_binary(int(imm1), 12)
         return str(imm) + register[rs1] + funct3 + register[x[1].split(',')[0]] + opcode
     elif x[0] in ['addi', 'sltiu', 'jalr']:
-        if not all(map(check_register, x[1].split(','))) or int(x[1].split(',')[2])<-2048 or int(x[1].split(',')[2])>=2048:
+        if ot check_register(x[1].split(',')[0]) or not check_register(x[1].split(',')[1])  or int(x[1].split(',')[2])<-2048 or int(x[1].split(',')[2])>=2048:
             return "Error"
         imm = decimal_to_binary(int(x[1].split(',')[2]), 12)
         return imm + register[x[1].split(',')[0]] + funct3 + register[x[1].split(',')[1]] + opcode
