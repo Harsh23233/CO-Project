@@ -31,10 +31,11 @@ def decimal_to_binary(n, length):
 
 def check_input_format(line, inst_type):
     if inst_type == 'lw':
-        return len(line.split(',')) == 2 and ' ' in line.split(',')[0] and '(' in line.split(',')[1] and ')' in line.split(',')[1]
+        parts = line.split(',')
+        return len(parts) == 2 and ' ' in parts[0] and '(' in parts[1] and ')' in parts[1]
     elif inst_type in ['addi', 'sltiu', 'jalr']:
         parts = line.split(',')
-        return len(parts) == 3 and ' ' in parts[0]
+        return len(parts) == 3 and ' ' in parts[0] and ' ' in parts[1]
     elif inst_type == 'sw':
         parts = line.split(',')
         return len(parts) == 2 and ' ' in parts[0] and '(' in parts[1] and ')' in parts[1]
