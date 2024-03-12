@@ -74,7 +74,7 @@ def b_type_errors(list1,list2):
         for i in range(0,2):
                 if list2[i] not in register.keys():
                         return 1        
-        if(int(list2[2])>2047 or int(list2[2])<-2048):
+        if(int(list2[2])>=2**12 or int(list2[2])<-2**12):
                 return 1
         return 0
 
@@ -85,10 +85,9 @@ def b_type(list1,list2):
                 print("Invalid")
                 return flag
         temp = ''
-        label = decimal_to_binary(int(list2[2]), 16)
-        imm1 = label[-5:]
-        imm2 = label[4:11]
-        temp += (imm2 + register[list2[1]] + register[list2[0]] + btype[list1[0]] + imm1 + '1100011')
+        label = decimal_to_binary(int(list2[2]), 13)
+        label = label[::-1]
+        temp += (label[12] + label[10:4:-1] + register[list2[1]] + register[list2[0]] + btype[list1[0]] + label[4:0:-1] + label[11] + '1100011')
         if(temp=="00000000000000000000000001100011"):
                 return temp
         output.append(temp)
@@ -120,7 +119,7 @@ pointer2=open(otpt,'w')
 newline=[]
 lines=pointer1.readlines()
 
-if 'beq zero,zero,0\n' not in lines:
+if 'beq zero,zero,0' not in lines:
     valid_instructions=False
 else:
     for i in range(len(lines)):
@@ -233,8 +232,9 @@ else:
                     valid_instructions=False
                     break
                 else:
-                    s= decimal_to_binary(int(op[1]),20)
-                    line=s[8:-1]+s[0:9]+register[op[0]]+jtype[i[0]]
+                    s = decimal_to_binary(int(op[1]),21)
+                    s[::-1]
+                    line = s[20] + s[10:0:-1] + s[11] + s[19:11:-1] + register[op[0]] + jtype[i[0]]
                     output.append(line)
             else:
                 print("Error: Invalid Instruction")
