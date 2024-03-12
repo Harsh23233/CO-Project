@@ -90,7 +90,6 @@ def b_type(list1,list2):
         imm2 = label[4:11]
         temp += (imm2 + register[list2[1]] + register[list2[0]] + btype[list1[0]] + imm1 + '1100011')
         if(temp=="00000000000000000000000001100011"):
-                print('virtual halt detected')
                 return temp
         output.append(temp)
         return flag
@@ -114,9 +113,13 @@ jtype={"jal":"1101111"}
 output = []
 valid_instructions = True
 
-file=open('Input_file.txt','r')
-lines = file.readlines()
+inpt=sys.argv[1]
+otpt=sys.argv[2]
+pointer1=open(inpt,'r')
+pointer2=open(otpt,'w')
 newline=[]
+lines=pointer1.readlines()
+
 if 'beq zero,zero,0\n' not in lines:
     valid_instructions=False
 else:
@@ -237,7 +240,9 @@ else:
                 print("Error: Invalid Instruction")
                 valid_instructions=False
                 break
-file.close()
+
+pointer1.close()
 if valid_instructions:
-    with open("Output_file.txt", "w") as f:
-        f.write("\n".join(output))
+    pointer2.write("\n".join(output))
+
+pointer2.close()
