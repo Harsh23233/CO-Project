@@ -74,7 +74,7 @@ def b_type_errors(list1,list2):
         for i in range(0,2):
                 if list2[i] not in register.keys():
                         return 1        
-        if(int(list2[2])>2047 or int(list2[2])<-2048):
+        if(int(list2[2])>=2**12 or int(list2[2])<-2**12):
                 return 1
         return 0
 
@@ -210,8 +210,8 @@ else:
                     valid_instructions=False
                     break
                 else:
-                    s=decimal_to_binary(int(op[1]),32)
-                    line=s[0:20]+register[op[0]]+utype[i[0]]
+                    s = decimal_to_binary(int(op[1]),32)
+                    line = s[0:20] + register[op[0]] + utype[i[0]]
                     output.append(line)
             elif i[0] in jtype:
                 if len(i)!=2:
@@ -232,8 +232,8 @@ else:
                     valid_instructions=False
                     break
                 else:
-                    s= decimal_to_binary(int(op[1]),20)
-                    line=s[8:-1]+s[0:9]+register[op[0]]+jtype[i[0]]
+                    s = decimal_to_binary(int(op[1]),21)
+                    line = s[0] + s[-11:-1] + s[10] + s[1:9] + register[op[0]] + jtype[i[0]]
                     output.append(line)
             else:
                 print("Error: Invalid Instruction")
