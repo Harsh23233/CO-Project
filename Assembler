@@ -127,10 +127,7 @@ pointer2=open(otpt,'w')
 newline=[]
 lines=pointer1.readlines()
 
-if 'beq zero,zero,0\n' not in lines and 'beq zero,zero,0' not in lines:
-    valid_instructions=False
-else:
-    for i in range(len(lines)):
+for i in range(len(lines)):
         j=lines[i].split()
         if j==[]:
             newline.append(i)
@@ -149,112 +146,114 @@ else:
             del j[0]
         lines[i]=j
         PC1+=4
-    else:
-        if newline!=[]:
-            for i in newline:
-                del lines[i]
-        for i in lines:
-            if len(i) != 2:
+if ['beq', 'zero,zero,0\n'] not in lines and ['beq', 'zero,zero,0'] not in lines:
+    valid_instructions=False
+else:
+    if newline!=[]:
+        for i in newline:
+            del lines[i]
+    for i in lines:
+        if len(i) != 2:
+            valid_instructions = False
+            print("Invalid number of arguments")
+            break
+        elif i[0] in rtype:
+            c = i[1].split(',')
+            if len(c) != 3:
                 valid_instructions = False
-                print("Invalid number of arguments")
+                print("Invalid number of arguments for r type")
                 break
-            elif i[0] in rtype:
-                c = i[1].split(',')
-                if len(c) != 3:
-                    valid_instructions = False
-                    print("Invalid number of arguments for r type")
-                    break
-                else:
-                    binary, error = r_type(i[0], c[0], c[1], c[2], register)
-                    if error:
-                        valid_instructions = False
-                        print(error)
-                        break
-                    elif binary:
-                        output.append(binary)
-                    else:
-                        valid_instructions = False
-                        print("Invalid register for r type")
-                        break
-            elif i[0] in stype.keys() and check_input_format(i[0]+' '+i[1], 'sw'):
-                result = s_code(i)
-                if result == "Error":
-                    valid_instructions=False
-                    print("Invalid for s type")
-                    break
-                output.append(result)
-            elif i[0] in itype.keys() and check_input_format(i[0]+' '+i[1], i[0]):
-                result = i_code(i)
-                if result == "Error":
-                    valid_instructions=False
-                    print("Invalid for i type")
-                    break
-                output.append(result)
-            elif i[0] in btype.keys():
-                c=i[1].split(',')
-                if len(c)!=3:
-                    valid_instructions=False
-                    print("Invalid number of arguments for b type")
-                    break
-                else:
-                    valid_instructions=b_type([i[0]],c)
-                    if(valid_instructions=="00000000000000000000000001100011"):
-                        output.append(valid_instructions)
-                        break
-            elif i[0] in utype:
-                if len(i)!=2:
-                    print("Error: Invalid Instruction Syntax for u type")
-                    valid_instructions=False
-                    break
-                op=i[1].split(",")
-                if op[0] not in register:
-                    print("Error: Invalid Register for u type")
-                    valid_instructions=False
-                    break
-                elif len(op)!=2:
-                    print("Error: Inavlid Instruction Syntax for u type")
-                    valid_instructions=False
-                    break
-                elif int(op[1])>=(2**31) or int(op[1])<-(2**31):
-                    print("Error: Immediate value out of range for u type")
-                    valid_instructions=False
-                    break
-                else:
-                    s = decimal_to_binary(int(op[1]),32)
-                    line = s[0:20] + register[op[0]] + utype[i[0]]
-                    output.append(line)
-            elif i[0] in jtype:
-                op=i[1].split(",")
-                s=''
-                if op[1] in pc_of_label:
-                    op[1]=int(pc_of_label[op[1]]-PC2)
-                else:
-                    op[1]=int(op[1])
-                if len(i)!=2:
-                    print("Error: Invalid Instruction Syntax for j type")
-                    valid_instructions=False
-                    break
-                elif op[0] not in register:
-                    print("Error: Invalid Register for j type")
-                    valid_instructions=False
-                    break
-                elif len(op)!=2:
-                    print("Error: Inavlid Instruction Syntax for j type")
-                    valid_instructions=False
-                    break
-                elif int(op[1])>=(2**20) or int(op[1])<-(2**20):
-                    print(op[1])
-                    print("Error: Immediate value out of range for j type")
-                    valid_instructions=False
-                    break
-                s=decimal_to_binary(int(op[1]),21)
-                line = s[0] + s[-11:-1] + s[10] + s[1:9] + register[op[0]] + jtype[i[0]]
-                output.append(line)
             else:
-                print("Error: Invalid Instruction")
+                binary, error = r_type(i[0], c[0], c[1], c[2], register)
+                if error:
+                    valid_instructions = False
+                    print(error)
+                    break
+                elif binary:
+                    output.append(binary)
+                else:
+                    valid_instructions = False
+                    print("Invalid register for r type")
+                    break
+        elif i[0] in stype.keys() and check_input_format(i[0]+' '+i[1], 'sw'):
+            result = s_code(i)
+            if result == "Error":
+                valid_instructions=False
+                print("Invalid for s type")
+                break
+            output.append(result)
+        elif i[0] in itype.keys() and check_input_format(i[0]+' '+i[1], i[0]):
+            result = i_code(i)
+            if result == "Error":
+                valid_instructions=False
+                print("Invalid for i type")
+                break
+            output.append(result)
+        elif i[0] in btype.keys():
+            c=i[1].split(',')
+            if len(c)!=3:
+                valid_instructions=False
+                print("Invalid number of arguments for b type")
+                break
+            else:
+                valid_instructions=b_type([i[0]],c)
+                if(valid_instructions=="00000000000000000000000001100011"):
+                    output.append(valid_instructions)
+                    break
+        elif i[0] in utype:
+            if len(i)!=2:
+                print("Error: Invalid Instruction Syntax for u type")
                 valid_instructions=False
                 break
-            PC2+=4
+            op=i[1].split(",")
+            if op[0] not in register:
+                print("Error: Invalid Register for u type")
+                valid_instructions=False
+                break
+            elif len(op)!=2:
+                print("Error: Inavlid Instruction Syntax for u type")
+                valid_instructions=False
+                break
+            elif int(op[1])>=(2**31) or int(op[1])<-(2**31):
+                print("Error: Immediate value out of range for u type")
+                valid_instructions=False
+                break
+            else:
+                s = decimal_to_binary(int(op[1]),32)
+                line = s[0:20] + register[op[0]] + utype[i[0]]
+                output.append(line)
+        elif i[0] in jtype:
+            op=i[1].split(",")
+            s=''
+            if op[1] in pc_of_label:
+                op[1]=int(pc_of_label[op[1]]-PC2)
+            else:
+                op[1]=int(op[1])
+            if len(i)!=2:
+                print("Error: Invalid Instruction Syntax for j type")
+                valid_instructions=False
+                break
+            elif op[0] not in register:
+                print("Error: Invalid Register for j type")
+                valid_instructions=False
+                break
+            elif len(op)!=2:
+                print("Error: Inavlid Instruction Syntax for j type")
+                valid_instructions=False
+                break
+            elif int(op[1])>=(2**20) or int(op[1])<-(2**20):
+                print(op[1])
+                print("Error: Immediate value out of range for j type")
+                valid_instructions=False
+                break
+            s=decimal_to_binary(int(op[1]),21)
+            line = s[0] + s[-11:-1] + s[10] + s[1:9] + register[op[0]] + jtype[i[0]]
+            output.append(line)
+        else:
+            print("Error: Invalid Instruction")
+            valid_instructions=False
+            break
+        PC2+=4
 
 pointer1.close()
 if valid_instructions:
