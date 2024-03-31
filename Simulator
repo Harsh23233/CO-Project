@@ -1,1 +1,12 @@
-#Hello
+def twos_complement_binary_to_decimal(binary):
+    if binary[0] == '1': # If the number is negative
+        # Invert all bits
+        inverted = ''.join('1' if bit == '0' else '0' for bit in binary)
+        # Add 1 to the inverted number
+        binary = bin(int(inverted, 2) + 1)[2:].zfill(len(binary))
+        # Convert the binary number to decimal
+        decimal = -int(binary, 2)
+    else:
+        decimal = int(binary, 2)
+
+    return decimal
