@@ -247,7 +247,7 @@ else:
                 valid_instructions=False
                 break
             s=decimal_to_binary(int(op[1]),21)
-            line = s[0] + s[-11:-1] + s[10] + s[1:9] + register[op[0]] + jtype[i[0]]
+            line = s[-21] + s[-11:-1] + s[-12] + s[-20:-12] + register[op[0]] + jtype[i[0]]
             output.append(line)
         else:
             print("Error: Invalid Instruction")
