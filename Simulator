@@ -1,3 +1,4 @@
+import sys
 def twos_complement_binary_to_decimal(binary):
     if binary[0] == '1': # If the number is negative
         # Invert all bits
@@ -10,8 +11,46 @@ def twos_complement_binary_to_decimal(binary):
         decimal = int(binary, 2)
 
     return decimal
-registers = {"00000":0,"00001":0,"00010":0,"00011":0,"00100":0,"00101":0,"00110":0,"00111":0,
-             "01000":0,"01001":0,"01010":0,"01011":0,"01100":0,"01101":0,"01110":0,"01111":0,
-             "10000":0,"10001":0,"10010":0,"10011":0,"10100":0,"10101":0,"10110":0,"10111":0,
-             "11000":0,"11001":0,"11010":0,"11011":0,"11100":0,"11101":0,"11110":0,"11111":0}
+regs = {
+    'PC' : 0,
+    '00000' : 0, '00001' : 0, '00010' : 0, '00011' : 0, '00100' : 0,
+    '00101' : 0, '00110' : 0, '00111' : 0, '01000' : 0, '01000' : 0,
+    '01001' : 0, '01010' : 0, '01011' : 0, '01100' : 0, '01101' : 0,
+    '01110' : 0, '01111' : 0, '10000' : 0, '10001' : 0, '10010' : 0,
+    '10011' : 0, '10100' : 0, '10101' : 0, '10110' : 0, '10111' : 0,
+    '11000' : 0, '11001' : 0, '11010' : 0, '11011' : 0, '11100' : 0,
+    '11101' : 0, '11110' : 0, '11111' : 0
+}
+
+rtype=['0110011']
+itype = ['0000011','0010011','0010011','1100111']
+stype = ['0100011']
+btype=['1100011']
+utype=["0010111","0110111"]
+jtype=["1101111"]
+valid_instructions = True
+
+inpt=sys.argv[1]
+otpt=sys.argv[2]
+pointer1=open(inpt,'r')
+pointer2=open(otpt,'w')
+lines=pointer1.readlines()
+
+for i in lines:
+    if i[-1:-7] in rtype:
+        #Complete this
+    elif i[-1:-7] in itype:
+        #Complete this
+    elif i[-1:-7] in stype:
+        #Complete this
+    elif i[-1:-7] in btype:
+        #Complete this
+    elif i[-1:-7] in utype:
+        #Complete this
+    elif i[-1:-7] in jtype:
+        #Complete this
+    else:
+        valid_instructions = False
+        print("Error: Invalid Instruction")
+        break
 
