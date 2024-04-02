@@ -44,6 +44,14 @@ def i_type(line):
     if(opcode == '0010011' and line[17:20]=='000'):   #addi
         regs[line[20:25]] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #rs2 = rs1+imm
     if(opcode == '0010011' and line[17:20]=='011'):  #sltiu
+        if(int(decimal_to_binary(regs[line[12:17]]),2)<int(line[0:12]),2):   #if unsigned(rs1)<unsigned(imm)
+            regs[line[20:25]] =1
+    if(opcode == '1100111'):   #jalr
+        regs[line[20:25]]=regs['PC']+4    #store ret address in rd
+        regs['PC'] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #updata PC
+        regs['PC'] = decimal_to_binary(regs['PC'],32)[0:31]+'0'    #before jumping LSB of PC = 0
+        
+        
 
 def u_type(line):
     global regs
