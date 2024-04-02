@@ -11,6 +11,7 @@ def twos_complement_binary_to_decimal(binary):
         decimal = int(binary, 2)
 
     return decimal
+import sys
 regs = {
     'PC' : 0,
     '00000' : 0, '00001' : 0, '00010' : 0, '00011' : 0, '00100' : 0,
@@ -37,20 +38,20 @@ pointer2=open(otpt,'w')
 lines=pointer1.readlines()
 
 for i in lines:
-    if i[-1:-7] in rtype:
+    if i[-7:] in rtype:
         #Complete this
-    elif i[-1:-7] in itype:
+    elif i[-7:] in itype:
         #Complete this
-    elif i[-1:-7] in stype:
+    elif i[-7:] in stype:
         #Complete this
-    elif i[-1:-7] in btype:
+    elif i[-7:] in btype:
         #Complete this
-    elif i[-1:-7] in utype:
+    elif i[-7:] in utype:
         #Complete this
-    elif i[-1:-7] in jtype:
+    elif i[-7:] in jtype:
         #Complete this
     else:
         valid_instructions = False
         print("Error: Invalid Instruction")
         break
-
+    
