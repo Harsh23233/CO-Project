@@ -45,6 +45,30 @@ def i_type(line):
         regs[line[20:25]] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #rs2 = rs1+imm
     if(opcode == '0010011' and line[17:20]=='011'):  #sltiu
 
+def u_type(line):
+    global regs
+    #lui
+    if line[-7:]=="0110111":
+        #Extracting dest reg and immediate from instruction
+        rd=line[-12:-7]
+        imm=line[:-12]
+        #Extending immediate according to instruction semantics
+        while len(imm)<32:
+            imm+='0'
+        #Converting immediate to int and writing it on the specified reg
+        imm=twos_complement_binary_to_decimal(imm)
+        regs[rd]=imm
+    else:
+        #Extracting dest reg and immediate from instruction
+        rd=line[-12:-7]
+        imm=line[:-12]
+        #Extending immediate according to instruction semantics
+        while len(imm)<32:
+            imm+='0'
+        #Converting immediate to int and writing it on the specified reg
+        imm=twos_complement_binary_to_decimal(imm)
+        regs[rd]=regs['PC']+imm
+
 inpt=sys.argv[1]
 otpt=sys.argv[2]
 pointer1=open(inpt,'r')
@@ -62,11 +86,13 @@ while i<len(lines):
     elif lines[i][-7:] in btype:
         #Complete this
     elif lines[i][-7:] in utype:
-        #Complete this
+        u_type(lines[i])
     elif lines[i][-7:] in jtype:
         #Complete this
     else:
         valid_instructions = False
         print("Error: Invalid Instruction")
         break
+    regs["PC"]=i*4
+    i+=1
     
