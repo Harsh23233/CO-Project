@@ -37,18 +37,19 @@ pointer1=open(inpt,'r')
 pointer2=open(otpt,'w')
 lines=pointer1.readlines()
 
-for i in lines:
-    if i[-7:] in rtype:
+i = 0
+while i<len(lines):
+    if lines[i][-7:] in rtype:
         #Complete this
-    elif i[-7:] in itype:
+    elif lines[i][-7:] in itype:
         #Complete this
-    elif i[-7:] in stype:
+    elif lines[i][-7:] in stype:
         #Complete this
-    elif i[-7:] in btype:
+    elif lines[i][-7:] in btype:
         #Complete this
-    elif i[-7:] in utype:
+    elif lines[i][-7:] in utype:
         #Complete this
-    elif i[-7:] in jtype:
+    elif lines[i][-7:] in jtype:
         #Complete this
     else:
         valid_instructions = False
