@@ -9,8 +9,16 @@ def twos_complement_binary_to_decimal(binary):
         decimal = -int(binary, 2)
     else:
         decimal = int(binary, 2)
-
     return decimal
+
+def sign_extend(value, bits):
+    sign_bit = value[0]
+    if sign_bit == '1':
+        value = value[0] * (32 - bits) + value
+    else:
+        value = '0' * (32 - bits) + value
+    return value
+
 def decimal_to_binary(n, length):
         return format(n if n >= 0 else (1 << length) + n, f'0{length}b')
 regs = {
@@ -76,6 +84,33 @@ def u_type(line):
         #Converting immediate to int and writing it on the specified reg
         imm=twos_complement_binary_to_decimal(imm)
         regs[rd]=regs['PC']+imm
+
+def b_type(instruction):
+    global regs
+    #extracting immediate
+    imm = sign_extend(instruction[0] + instruction[24:25] + instruction[1:7] + instruction[20:24] + '0', 13)
+    #extracting registers
+    rs2 = regs[instruction[7:12]]
+    rs1 = regs[instruction[12:17]]
+    funct3 = instruction[17:20]
+    if funct3 == '000':
+        if rs1 == rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+    elif funct3 == '001':
+        if rs1 != rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+    elif funct3 == '100':
+        if rs1 < rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+    elif funct3 == '101':
+        if rs1 >= rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+    elif funct3 == '110':
+        if rs1 < rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+    elif funct3 == '111':
+        if rs1 >= rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
 
 inpt=sys.argv[1]
 otpt=sys.argv[2]
