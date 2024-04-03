@@ -39,6 +39,7 @@ btype=['1100011']
 utype=["0010111","0110111"]
 jtype=["1101111"]
 valid_instructions = True
+o_put=[]
 
 def r_type(line):
     global regs
@@ -98,7 +99,7 @@ def i_type(line):
     if(opcode == '1100111'):   #jalr
         regs[line[20:25]]=regs['PC']+4    #store ret address in rd
         regs['PC'] = decimal_to_binary(regs['PC'],32)[0:31]+'0'    #before jumping LSB of PC = 0
-        regs['PC'] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #updata PC
+        regs['PC'] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #updata PC       
 
 def u_type(line):
     global regs
@@ -123,19 +124,6 @@ def u_type(line):
         #Converting immediate to int and writing it on the specified reg
         imm=twos_complement_binary_to_decimal(imm)
         regs[rd]=regs['PC']+imm
-
-def j_type(line):
-    global regs
-    global i
-    #Extracting dest reg and immediate from instruction
-    rd=line[-12:-7]
-    imm=line[0]+line[-19:-12]+line[-20]+line[1:-20]+"0"
-    #Saving the return address in dest reg
-    regs[rd]=regs["PC"]+4
-    #Adding the offset to PC and i
-    imm=twos_complement_binary_to_decimal(imm)
-    regs["PC"]+=imm
-    i+=imm//4
 
 def b_type(instruction):
     global regs
@@ -167,11 +155,12 @@ def b_type(instruction):
 inpt=sys.argv[1]
 otpt=sys.argv[2]
 pointer1=open(inpt,'r')
-pointer2=open(otpt,'w')
+pointer2=open(otpt,'a')
 lines=pointer1.readlines()
 
 i = 0
 while i<len(lines):
+    output=[]
     if lines[i][-7:] in rtype:
         r_type(lines[i])
         #Complete this
@@ -188,11 +177,24 @@ while i<len(lines):
         u_type(lines[i])
     elif lines[i][-7:] in jtype:
         j_type(lines[i])
-        continue
+        #Complete this
     else:
         valid_instructions = False
         print("Error: Invalid Instruction")
         break
+    for j in regs:
+        a=decimal_to_binary(regs[j],32)
+        output.append(a)
+        if valid_instructions:
+            pointer2.write("\n".join(output))
     regs["PC"]=i*4
     i+=1
-    
+
+for k in regs:
+    a=decimal_to_binary(regs[j],32)
+    o_put.append(a)
+    if valid_instructions:
+        pointer2.write("\n".join(o_put))
+
+pointer1.close()
+pointer2.close()
