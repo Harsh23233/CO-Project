@@ -125,6 +125,20 @@ def u_type(line):
         imm=twos_complement_binary_to_decimal(imm)
         regs[rd]=regs['PC']+imm
 
+def j_type(line):
+    global regs
+    global i
+    #Extracting dest reg and immediate from instruction
+    rd=line[-12:-7]
+    imm=line[0]+line[-19:-12]+line[-20]+line[1:-20]
+    imm=imm[:-1]+"0"
+    #Saving the return address in dest reg
+    regs[rd]=regs["PC"]+4
+    #Adding the offset to PC and i
+    imm=twos_complement_binary_to_decimal(imm)
+    regs["PC"]+=imm
+    i+=imm//4
+
 def b_type(instruction):
     global regs
     #extracting immediate
@@ -177,7 +191,7 @@ while i<len(lines):
         u_type(lines[i])
     elif lines[i][-7:] in jtype:
         j_type(lines[i])
-        #Complete this
+        continue
     else:
         valid_instructions = False
         print("Error: Invalid Instruction")
