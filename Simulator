@@ -40,6 +40,47 @@ utype=["0010111","0110111"]
 jtype=["1101111"]
 valid_instructions = True
 
+def r_type(line):
+    global regs
+    rs2=line[7:12]
+    rs1=line[12:17]
+    rd=line[-12:-7]
+    if(line[0:7]=='0000000'):
+        if(line[-15:-12]=='000'):
+            regs[rd]=regs[rs1]+regs[rs2]
+        elif(line[-15:-12]=='001'):
+            rs2 = decimal_to_binary(regs[rs2],32)
+            rs2=rs2[-5:]
+            rs2=int(rs2,2)
+            regs[rd]=regs[rs1]<<rs2
+        elif(line[-15:-12]=='010'):
+            if(regs[rs1]<regs[rs2]):
+                regs[rd]=1
+            else:
+                regs[rd]=0
+        elif(line[-15:-12]=='011'):
+            rs1=decimal_to_binary(regs[rs1],32)
+            rs1=int(rs1,2)
+            rs2=decimal_to_binary(regs[rs1],32)
+            rs2=int(rs2,2)
+            if(rs1<rs2):
+                regs[rd]=1
+            else:
+                regs[rd]=0
+        elif(line[-15:-12]=='100'):
+            regs[rd]=(regs[rs1])^(regs[rs2])
+        elif(line[-15:-12]=='101'):
+            rs2 = decimal_to_binary(regs[rs2],32)
+            rs2=rs2[-5:]
+            rs2=int(rs2,2)
+            regs[rd]=regs[rs1]>>rs2
+        elif(line[-15:-12]=='110'):
+            regs[rd]=regs[rs1]|regs[rs2]
+        elif(line[-15:-12]=='111'):
+            regs[rd]=regs[rs1]&regs[rs2]
+    else:
+        regs[rd]=regs[rs1]-regs[rs2]
+
 def s_type(line):
     global regs
     regs[line[7:12]]=regs[str(decimal_to_binary(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:7]+line[20:25]),5))]   #rs2 = mem(rs1 + imm)
@@ -122,16 +163,21 @@ lines=pointer1.readlines()
 i = 0
 while i<len(lines):
     if lines[i][-7:] in rtype:
+        r_type(lines[i])
         #Complete this
     elif lines[i][-7:] in itype:
+        i_type(lines[i])
         #Complete this
     elif lines[i][-7:] in stype:
+        s_type(lines[i])
         #Complete this
     elif lines[i][-7:] in btype:
+        b_type(lines[i])
         #Complete this
     elif lines[i][-7:] in utype:
         u_type(lines[i])
     elif lines[i][-7:] in jtype:
+        j_type(lines[i])
         #Complete this
     else:
         valid_instructions = False
