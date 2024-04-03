@@ -56,8 +56,9 @@ def i_type(line):
             regs[line[20:25]] =1
     if(opcode == '1100111'):   #jalr
         regs[line[20:25]]=regs['PC']+4    #store ret address in rd
-        regs['PC'] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #updata PC
         regs['PC'] = decimal_to_binary(regs['PC'],32)[0:31]+'0'    #before jumping LSB of PC = 0
+        regs['PC'] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #updata PC
+        
         
         
 
