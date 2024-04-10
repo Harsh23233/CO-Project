@@ -1,3 +1,4 @@
+from os import write
 import sys
 def twos_complement_binary_to_decimal(binary):
     if binary[0] == '1': # If the number is negative
@@ -177,16 +178,12 @@ while i<len(lines):
     output=[]
     if lines[i][-7:] in rtype:
         r_type(lines[i])
-        #Complete this
     elif lines[i][-7:] in itype:
         i_type(lines[i])
-        #Complete this
     elif lines[i][-7:] in stype:
         s_type(lines[i])
-        #Complete this
     elif lines[i][-7:] in btype:
         b_type(lines[i])
-        #Complete this
     elif lines[i][-7:] in utype:
         u_type(lines[i])
     elif lines[i][-7:] in jtype:
@@ -198,17 +195,27 @@ while i<len(lines):
         break
     for j in regs:
         a=decimal_to_binary(regs[j],32)
-        output.append(a)
+        b="0b"+a
+        output.append(b)
         if valid_instructions:
-            pointer2.write("\n".join(output))
+            pointer2.write(" ".join(output))
+            pointer2.write("\n")
     regs["PC"]=i*4
     i+=1
 
 for k in regs:
-    a=decimal_to_binary(regs[j],32)
-    o_put.append(a)
+    if k=="PC":
+        continue
+    a=decimal_to_binary(regs[k],32)
+    b="0b"+a
+    o_put.append(b)
+    addr=0x00010000
     if valid_instructions:
-        pointer2.write("\n".join(o_put))
+        c=format(c,'08x')
+        d="0x"+c+":"
+        pointer2.write(d)
+        pointer2.write(b)
+        pointer2.write("\n")
 
 pointer1.close()
 pointer2.close()
