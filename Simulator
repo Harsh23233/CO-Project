@@ -173,13 +173,32 @@ pointer1=open(inpt,'r')
 pointer2=open(otpt,'a')
 lines=pointer1.readlines()
 
+lines=[
+    '00000000000000000000010000110011',
+    '00000000000100000000010010010011',
+    '00000000000000000000100100110011',
+    '00000000011000000000100110010011',
+    '00000001100000000000000011101111',
+    '00000000000001001000010000110011',
+    '00000000000010010000010010110011',
+    '11111111111110011000100110010011',
+    '11111110000010011001100011100011',
+    '00000000000000000000000001100011',
+    '00000000100101000000100100110011',
+    '00000000000000001000000001100111',
+    '00000000000000000000000001100011',
+    ]
+
 i = 0
 while i<len(lines):
     output=[]
+##    print(lines[i][-7:])
     if lines[i][-7:] in rtype:
         r_type(lines[i])
+##        print(regs)
     elif lines[i][-7:] in itype:
         i_type(lines[i])
+##        print(regs)
     elif lines[i][-7:] in stype:
         s_type(lines[i])
     elif lines[i][-7:] in btype:
@@ -190,32 +209,40 @@ while i<len(lines):
         j_type(lines[i])
         continue
     else:
+##        print(lines[i])
+##        print(lines[i][-7:])
         valid_instructions = False
         print("Error: Invalid Instruction")
         break
+    i+=1
+    regs["PC"]=i*4
     for j in regs:
         a=decimal_to_binary(regs[j],32)
         b="0b"+a
         output.append(b)
-        if valid_instructions:
-            pointer2.write(" ".join(output))
-            pointer2.write("\n")
-    regs["PC"]=i*4
-    i+=1
+##    print(output)
+    if valid_instructions:
+        pointer2.write(" ".join(output))
+        pointer2.write("\n")
+
+addr=0x00010000
 
 for k in regs:
     if k=="PC":
         continue
     a=decimal_to_binary(regs[k],32)
     b="0b"+a
-    o_put.append(b)
-    addr=0x00010000
+##    print(valid_instructions)
     if valid_instructions:
-        c=format(c,'08x')
+##        print(addr)
+        c=format(addr,'08x')
         d="0x"+c+":"
+##        print(d,b)
+##        print(pointer2.tell())
         pointer2.write(d)
         pointer2.write(b)
         pointer2.write("\n")
+    addr+=4
 
 pointer1.close()
 pointer2.close()
