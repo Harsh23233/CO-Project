@@ -33,6 +33,63 @@ regs = {
     '11101' : 0, '11110' : 0, '11111' : 0
 }
 
+data_mem = {
+    '0x00010000': 0,
+    '0x00010004': 0,
+    '0x00010008': 0,
+    '0x0001000c': 0,
+    '0x00010010': 0,
+    '0x00010014': 0,
+    '0x00010018': 0,
+    '0x0001001c': 0,
+    '0x00010020': 0,
+    '0x00010024': 0,
+    '0x00010028': 0,
+    '0x0001002c': 0,
+    '0x00010030': 0,
+    '0x00010034': 0,
+    '0x00010038': 0,
+    '0x0001003c': 0,
+    '0x00010040': 0,
+    '0x00010044': 0,
+    '0x00010048': 0,
+    '0x0001004c': 0,
+    '0x00010050': 0,
+    '0x00010054': 0,
+    '0x00010058': 0,
+    '0x0001005c': 0,
+    '0x00010060': 0,
+    '0x00010064': 0,
+    '0x00010068': 0,
+    '0x0001006c': 0,
+    '0x00010070': 0,
+    '0x00010074': 0,
+    '0x00010078': 0,
+    '0x0001007c': 0
+    }
+
+def save():
+    global stack
+    global activation_block
+    activation_block['ra']=[regs['00001']]
+    L=[['00101', regs['00101']], ['00110', regs['00110']], ['00111', regs['00111']], ['01010', regs['01010']], ['01011', regs['01011']],
+     ['01100', regs['01100']], ['01101', regs['01101']], ['01110', regs['01110']], ['01111', regs['01111']], ['10000', regs['10000']],
+     ['10001', regs['10001']], ['10010', regs['10010']], ['10011', regs['10011']], ['10100', regs['10100']], ['10101', regs['10101']],
+     ['10110', regs['10110']], ['10111', regs['10111']], ['11000', regs['11000']], ['11001', regs['11001']], ['11010', regs['11010']],
+     ['11011', regs['11011']], ['11100', regs['11100']], ['11101', regs['11101']], ['11110', regs['11110']], ['11111', regs['11111']]]
+    activation_block['loc_var']=L
+    stack.append(activation_block)
+
+def restore():
+    global stack
+    activation_block=stack.pop()
+    regs['00001']=activation_block['ra'].pop()
+    for i in activation_block['loc_var']:
+        regs[i[0]]=i[1]
+
+stack=[]
+activation_block={'args':[],'ra':[],'reg_spill':[],'loc_var':[]}
+
 rtype=['0110011']
 itype = ['0000011','0010011','0010011','1100111']
 stype = ['0100011']
@@ -99,8 +156,9 @@ def i_type(line):
             regs[line[20:25]] =1
     if(opcode == '1100111'):   #jalr
         regs[line[20:25]]=regs['PC']+4    #store ret address in rd
-        regs['PC'] = decimal_to_binary(regs['PC'],32)[0:31]+'0'    #before jumping LSB of PC = 0
-        regs['PC'] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #updata PC       
+        regs['PC'] = twos_complement_binary_to_decimal(decimal_to_binary(regs['PC'],32)[0:31]+'0')    #before jumping LSB of PC = 0
+        regs['PC'] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #update PC
+        save()       
 
 def u_type(line):
     global regs
@@ -139,6 +197,7 @@ def j_type(line):
     imm=twos_complement_binary_to_decimal(imm)
     regs["PC"]+=imm
     i+=imm//4
+    save()
 
 def b_type(instruction):
     global regs
@@ -166,13 +225,14 @@ def b_type(instruction):
     elif funct3 == '111':
         if rs1 >= rs2:
             regs['PC'] += twos_complement_binary_to_decimal(imm)
-
+'''
 inpt=sys.argv[1]
 otpt=sys.argv[2]
 pointer1=open(inpt,'r')
 pointer2=open(otpt,'a')
 lines=pointer1.readlines()
-
+'''
+pointer2=open('otpt.txt','a')
 lines=[
     '00000000000000000000010000110011',
     '00000000000100000000010010010011',
@@ -186,9 +246,10 @@ lines=[
     '00000000000000000000000001100011',
     '00000000100101000000100100110011',
     '00000000000000001000000001100111',
-    '00000000000000000000000001100011',
+    '00000000000000000000000001100011'
     ]
 
+j_check=0
 i = 0
 while i<len(lines):
     output=[]
@@ -205,17 +266,21 @@ while i<len(lines):
         b_type(lines[i])
     elif lines[i][-7:] in utype:
         u_type(lines[i])
+        if lines[i][-7:]=='1100111':
+            j_check=1
     elif lines[i][-7:] in jtype:
         j_type(lines[i])
-        continue
+        j_check=1
     else:
 ##        print(lines[i])
 ##        print(lines[i][-7:])
         valid_instructions = False
         print("Error: Invalid Instruction")
         break
-    i+=1
-    regs["PC"]=i*4
+    if j_check==0:
+        i+=1
+        regs["PC"]=i*4
+    j_check=0
     for j in regs:
         a=decimal_to_binary(regs[j],32)
         b="0b"+a
@@ -225,24 +290,10 @@ while i<len(lines):
         pointer2.write(" ".join(output))
         pointer2.write("\n")
 
-addr=0x00010000
+restore()
+if valid_instructions:
+    for i in data_mem:
+        pointer2.write(i+":"+decimal_to_binary(data_mem[i],32)+"\n")
 
-for k in regs:
-    if k=="PC":
-        continue
-    a=decimal_to_binary(regs[k],32)
-    b="0b"+a
-##    print(valid_instructions)
-    if valid_instructions:
-##        print(addr)
-        c=format(addr,'08x')
-        d="0x"+c+":"
-##        print(d,b)
-##        print(pointer2.tell())
-        pointer2.write(d)
-        pointer2.write(b)
-        pointer2.write("\n")
-    addr+=4
-
-pointer1.close()
+#pointer1.close()
 pointer2.close()
