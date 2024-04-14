@@ -142,13 +142,13 @@ def r_type(line):
 
 def s_type(line):
     global regs
-    regs[line[7:12]]=regs[str(decimal_to_binary(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:7]+line[20:25]),5))]   #rs2 = mem(rs1 + imm)
+    data_mem[str(decimal_to_binary(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:7]+line[20:25]),5))]=regs[line[7:12]]  #rs2 = mem(rs1 + imm)
     
 def i_type(line):
     global regs
     opcode = line[-7:]
     if(opcode == '0000011'):  #lw
-        regs[line[20:25]]=regs[str(decimal_to_binary(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12]),5))]   #rs2 = mem(rs1 + imm)
+        regs[line[20:25]]=data_mem[str(decimal_to_binary(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12]),5))]   #rs2 = mem(rs1 + imm)
     if(opcode == '0010011' and line[17:20]=='000'):   #addi
         regs[line[20:25]] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #rs2 = rs1+imm
     if(opcode == '0010011' and line[17:20]=='011'):  #sltiu
