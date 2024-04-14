@@ -22,6 +22,10 @@ def sign_extend(value, bits):
 
 def decimal_to_binary(n, length):
         return format(n if n >= 0 else (1 << length) + n, f'0{length}b')
+def decimal_to_hex(decimal):
+    if not (0 <= decimal <= 255):
+        raise ValueError("Decimal value should be in the range 0 to 255 for 8-bit data representation")
+    return '0x' + format(decimal, '08X')
 regs = {
     'PC' : 0,
     '00000' : 0, '00001' : 0, '00010' : 0, '00011' : 0, '00100' : 0,
@@ -142,13 +146,13 @@ def r_type(line):
 
 def s_type(line):
     global regs
-    data_mem[str(decimal_to_binary(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:7]+line[20:25]),5))]=regs[line[7:12]]  #rs2 = mem(rs1 + imm)
+    data_mem[str(decimal_to_hex(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:7]+line[20:25])))]=regs[line[7:12]]  #rs2 = mem(rs1 + imm)
     
 def i_type(line):
     global regs
     opcode = line[-7:]
     if(opcode == '0000011'):  #lw
-        regs[line[20:25]]=data_mem[str(decimal_to_binary(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12]),5))]   #rs2 = mem(rs1 + imm)
+        regs[line[20:25]]=data_mem[str(decimal_to_hex(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])))]   #rs2 = mem(rs1 + imm)
     if(opcode == '0010011' and line[17:20]=='000'):   #addi
         regs[line[20:25]] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #rs2 = rs1+imm
     if(opcode == '0010011' and line[17:20]=='011'):  #sltiu
