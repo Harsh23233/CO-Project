@@ -144,6 +144,8 @@ utype={"auipc":"0010111","lui":"0110111"}
 jtype={"jal":"1101111"}
 rhtype = ['rst','halt']
 ltype = {"mul":"0000111"}
+mtype=['rvrs']
+
 output = []
 valid_instructions = True
 pc_of_label={}
