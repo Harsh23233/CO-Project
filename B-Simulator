@@ -1,4 +1,3 @@
-#Bonus-Simulator
 from os import write
 import sys
 def twos_complement_binary_to_decimal(binary):
@@ -75,36 +74,13 @@ data_mem = {
     '0x0001007c': 0
     }
 
-##def save():
-##    global stack
-##    global activation_block
-##    activation_block['ra']=[regs['00001']]
-##    L=[['00101', regs['00101']], ['00110', regs['00110']], ['00111', regs['00111']], ['01010', regs['01010']], ['01011', regs['01011']],
-##     ['01100', regs['01100']], ['01101', regs['01101']], ['01110', regs['01110']], ['01111', regs['01111']], ['10000', regs['10000']],
-##     ['10001', regs['10001']], ['10010', regs['10010']], ['10011', regs['10011']], ['10100', regs['10100']], ['10101', regs['10101']],
-##     ['10110', regs['10110']], ['10111', regs['10111']], ['11000', regs['11000']], ['11001', regs['11001']], ['11010', regs['11010']],
-##     ['11011', regs['11011']], ['11100', regs['11100']], ['11101', regs['11101']], ['11110', regs['11110']], ['11111', regs['11111']]]
-##    activation_block['loc_var']=L
-##    stack.append(activation_block)
-##
-##def restore():
-##    global stack
-##    activation_block=stack.pop()
-##    regs['00001']=activation_block['ra'].pop()
-##    for i in activation_block['loc_var']:
-##        regs[i[0]]=i[1]
-##
-##stack=[]
-
-activation_block={'args':[],'ra':[],'reg_spill':[],'loc_var':[]}
-
 rtype=["0110011"]
 itype = ["0000011","0010011","0010011","1100111"]
 stype = ["0100011"]
 btype=["1100011"]
 utype=["0010111","0110111"]
 jtype=["1101111"]
-rhtype = ['1000101']
+rhtype = ["1000101"]
 valid_instructions = True
 o_put=[]
 
@@ -173,7 +149,6 @@ def i_type(line):
         regs['PC'] = twos_complement_binary_to_decimal(decimal_to_binary(regs['PC'],32)[0:31]+'0')    #before jumping LSB of PC = 0
         imm=twos_complement_binary_to_decimal(line[0:12])+regs[line[12:17]]
         i=imm//4
-##        print('i in jalr: ',i)
 
 def u_type(line):
     global regs
@@ -202,8 +177,6 @@ def u_type(line):
 def j_type(line):
     global regs
     global i
-##    i+=1
-##    regs['PC']=i*4
     #Extracting dest reg and immediate from instruction
     rd=line[-12:-7]
     imm=line[0]+line[-19:-12]+line[-20]+line[1:-20]
@@ -214,7 +187,6 @@ def j_type(line):
     imm=twos_complement_binary_to_decimal(imm)
     regs["PC"]+=imm
     i+=imm//4
-##    save()
 
 def b_type(instruction):
     global regs
@@ -226,9 +198,6 @@ def b_type(instruction):
     rs2 = regs[instruction[7:12]]
     rs1 = regs[instruction[12:17]]
     funct3 = instruction[17:20]
-    print()
-    print(twos_complement_binary_to_decimal(imm))
-    print(twos_complement_binary_to_decimal(imm)//4)
     #beq
     if funct3 == '000':
         if rs1 == rs2:
@@ -265,46 +234,23 @@ def b_type(instruction):
             regs['PC'] += twos_complement_binary_to_decimal(imm)
             i+=twos_complement_binary_to_decimal(imm)//4
             j_check=1
-
-def rh_type():
+def rh_type(instruction):
     global regs
-    for i in regs.keys and i!='PC':
-        regs[i] = 0
-    
-    
+    if(instruction[0:25] == '1'*25):
+        for i in regs.keys and i!='PC':
+            regs[i] = 0
+    elif(instruction[0:25] == '0'*25):
+
 inpt=sys.argv[1]
 otpt=sys.argv[2]
 pointer1=open(inpt,'r')
 pointer2=open(otpt,'a')
 lines=pointer1.readlines()
 
-pointer2=open('otpt.txt','w')
-lines=[
-    '00000000001000000000010000010011',
-    '00000001000000000000010010010011',
-    '00000000000100000000100100010011',
-    '00000000001100000000100110010011',
-    '00000000100110010001100100110011',
-    '00000000000100000000001010010011',
-    '00000000100010010010000000100011',
-    '00000000010010010000100100010011',
-    '01000000010101000000010000110011',
-    '01000000010110011000100110110011',
-    '00000010000010011000001001100011',
-    '11111110000001000001010011100011',
-    '00000000100010010010000000100011',
-    '00000000010010010000100100010011',
-    '00000000000100000000001010010011',
-    '01000000010101000000010000110011',
-    '00000001110100000000001010010011',
-    '00000000010101000101010000110011',
-    '11111100000001000001011011100011',
-    '00000000000000000000000001100011'
-]
 j_check=0
 
-##for i in range(0,len(lines)-1):    
-##    lines[i]=lines[i][:-1]
+for i in range(0,len(lines)-1):    
+    lines[i]=lines[i][:-1]
 
 i = 0
 flag=0
@@ -331,8 +277,6 @@ while i<len(lines):
     elif lines[i][-7:] in jtype:
         j_type(lines[i])
         j_check=1
-    elif lines[i][-7:] in rhtype:
-        rh_type()
     else:
         valid_instructions = False
         break
@@ -342,9 +286,7 @@ while i<len(lines):
         regs["PC"]=i*4
     j_check=0
     for j in regs:
-##        print()
         a=decimal_to_binary(regs[j],32)
-##        print('a: ',a)
         b="0b"+a
         output.append(b)
     if valid_instructions:
@@ -353,10 +295,9 @@ while i<len(lines):
     if flag==1:
         break
 
-##restore()
 if valid_instructions:
     for i in data_mem:
         pointer2.write(i+":"+"0b"+decimal_to_binary(data_mem[i],32)+"\n")
 
-##pointer1.close()
+pointer1.close()
 pointer2.close()
