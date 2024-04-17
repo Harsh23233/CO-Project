@@ -235,11 +235,15 @@ def b_type(instruction):
             i+=twos_complement_binary_to_decimal(imm)//4
             j_check=1
 def rh_type(instruction):
+    global flag
     global regs
+    global j_check
     if(instruction[0:25] == '1'*25):
         for i in regs.keys and i!='PC':
             regs[i] = 0
     elif(instruction[0:25] == '0'*25):
+        j_check=1
+        flag=1
 
 inpt=sys.argv[1]
 otpt=sys.argv[2]
@@ -277,6 +281,8 @@ while i<len(lines):
     elif lines[i][-7:] in jtype:
         j_type(lines[i])
         j_check=1
+    elif lines[i][-7:] in rhtype:
+        rh_type(lines[i])
     else:
         valid_instructions = False
         break
