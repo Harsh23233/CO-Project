@@ -1,1 +1,353 @@
 #Bonus Question
+from os import write
+import sys
+def twos_complement_binary_to_decimal(binary):
+    if binary[0] == '1': # If the number is negative
+        # Invert all bits
+        inverted = ''.join('1' if bit == '0' else '0' for bit in binary)
+        # Add 1 to the inverted number
+        binary = bin(int(inverted, 2) + 1)[2:].zfill(len(binary))
+        # Convert the binary number to decimal
+        decimal = -int(binary, 2)
+    else:
+        decimal = int(binary, 2)
+    return decimal
+
+def sign_extend(value, bits):
+    sign_bit = value[0]
+    if sign_bit == '1':
+        value = value[0] * (32 - bits) + value
+    else:
+        value = '0' * (32 - bits) + value
+    return value
+
+def decimal_to_binary(n, length):
+        return format(n if n >= 0 else (1 << length) + n, f'0{length}b')
+
+def decimal_to_hex(decimal):
+    if not (0 <= decimal <= 2**23-1):
+        raise ValueError("Decimal value should be in the range 0 to 255 for 8-bit data representation")
+    return '0x' + format(decimal, '08x')
+
+regs = {
+    'PC' : 0,
+    '00000' : 0, '00001' : 0, '00010' : 256, '00011' : 0, '00100' : 0,
+    '00101' : 0, '00110' : 0, '00111' : 0, '01000' : 0, '01000' : 0,
+    '01001' : 0, '01010' : 0, '01011' : 0, '01100' : 0, '01101' : 0,
+    '01110' : 0, '01111' : 0, '10000' : 0, '10001' : 0, '10010' : 0,
+    '10011' : 0, '10100' : 0, '10101' : 0, '10110' : 0, '10111' : 0,
+    '11000' : 0, '11001' : 0, '11010' : 0, '11011' : 0, '11100' : 0,
+    '11101' : 0, '11110' : 0, '11111' : 0
+}
+
+data_mem = {
+    '0x00010000': 0,
+    '0x00010004': 0,
+    '0x00010008': 0,
+    '0x0001000c': 0,
+    '0x00010010': 0,
+    '0x00010014': 0,
+    '0x00010018': 0,
+    '0x0001001c': 0,
+    '0x00010020': 0,
+    '0x00010024': 0,
+    '0x00010028': 0,
+    '0x0001002c': 0,
+    '0x00010030': 0,
+    '0x00010034': 0,
+    '0x00010038': 0,
+    '0x0001003c': 0,
+    '0x00010040': 0,
+    '0x00010044': 0,
+    '0x00010048': 0,
+    '0x0001004c': 0,
+    '0x00010050': 0,
+    '0x00010054': 0,
+    '0x00010058': 0,
+    '0x0001005c': 0,
+    '0x00010060': 0,
+    '0x00010064': 0,
+    '0x00010068': 0,
+    '0x0001006c': 0,
+    '0x00010070': 0,
+    '0x00010074': 0,
+    '0x00010078': 0,
+    '0x0001007c': 0
+    }
+
+##def save():
+##    global stack
+##    global activation_block
+##    activation_block['ra']=[regs['00001']]
+##    L=[['00101', regs['00101']], ['00110', regs['00110']], ['00111', regs['00111']], ['01010', regs['01010']], ['01011', regs['01011']],
+##     ['01100', regs['01100']], ['01101', regs['01101']], ['01110', regs['01110']], ['01111', regs['01111']], ['10000', regs['10000']],
+##     ['10001', regs['10001']], ['10010', regs['10010']], ['10011', regs['10011']], ['10100', regs['10100']], ['10101', regs['10101']],
+##     ['10110', regs['10110']], ['10111', regs['10111']], ['11000', regs['11000']], ['11001', regs['11001']], ['11010', regs['11010']],
+##     ['11011', regs['11011']], ['11100', regs['11100']], ['11101', regs['11101']], ['11110', regs['11110']], ['11111', regs['11111']]]
+##    activation_block['loc_var']=L
+##    stack.append(activation_block)
+##
+##def restore():
+##    global stack
+##    activation_block=stack.pop()
+##    regs['00001']=activation_block['ra'].pop()
+##    for i in activation_block['loc_var']:
+##        regs[i[0]]=i[1]
+##
+##stack=[]
+
+activation_block={'args':[],'ra':[],'reg_spill':[],'loc_var':[]}
+
+rtype=["0110011"]
+itype = ["0000011","0010011","0010011","1100111"]
+stype = ["0100011"]
+btype=["1100011"]
+utype=["0010111","0110111"]
+jtype=["1101111"]
+valid_instructions = True
+o_put=[]
+
+def r_type(line):
+    global regs
+    rs2=line[7:12]
+    rs1=line[12:17]
+    rd=line[-12:-7]
+    if(line[0:7]=='0000000'):
+        if(line[-15:-12]=='000'):
+            regs[rd]=regs[rs1]+regs[rs2]
+        elif(line[-15:-12]=='001'):
+            rs2 = decimal_to_binary(regs[rs2],32)
+            rs2=rs2[-5:]
+            rs2=int(rs2,2)
+            regs[rd]=regs[rs1]<<rs2
+        elif(line[-15:-12]=='010'):
+            if(regs[rs1]<regs[rs2]):
+                regs[rd]=1
+            else:
+                regs[rd]=0
+        elif(line[-15:-12]=='011'):
+            rs1=decimal_to_binary(regs[rs1],32)
+            rs1=int(rs1,2)
+            rs2=decimal_to_binary(regs[rs1],32)
+            rs2=int(rs2,2)
+            if(rs1<rs2):
+                regs[rd]=1
+            else:
+                regs[rd]=0
+        elif(line[-15:-12]=='100'):
+            regs[rd]=(regs[rs1])^(regs[rs2])
+        elif(line[-15:-12]=='101'):
+            rs2 = decimal_to_binary(regs[rs2],32)
+            rs2=rs2[-5:]
+            rs2=int(rs2,2)
+            regs[rd]=regs[rs1]>>rs2
+        elif(line[-15:-12]=='110'):
+            regs[rd]=regs[rs1]|regs[rs2]
+        elif(line[-15:-12]=='111'):
+            regs[rd]=regs[rs1]&regs[rs2]
+    else:
+        regs[rd]=regs[rs1]-regs[rs2]
+
+def s_type(line):
+    global regs
+    data_mem[str(decimal_to_hex(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:7]+line[20:25])))]=regs[line[7:12]]  #rs2 = mem(rs1 + imm)
+    
+def i_type(line):
+    global regs
+    global data_mem
+    global j_check
+    global i
+    opcode = line[-7:]
+    if(opcode == '0000011'):  #lw
+        regs[line[20:25]]=data_mem[str(decimal_to_hex(regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])))]   #rs2 = mem(rs1 + imm)
+    if(opcode == '0010011' and line[17:20]=='000'):   #addi
+        regs[line[20:25]] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #rs2 = rs1+imm
+    if(opcode == '0010011' and line[17:20]=='011'):  #sltiu
+        if(int(decimal_to_binary(regs[line[12:17]]),2)<int(line[0:12]),2):   #if unsigned(rs1)<unsigned(imm)
+            regs[line[20:25]] =1
+    if(opcode == '1100111'):   #jalr
+        j_check=1
+        regs[line[20:25]]=regs['PC']+4    #store ret address in rd
+        regs['PC'] = regs[line[12:17]]+twos_complement_binary_to_decimal(line[0:12])    #update PC
+        regs['PC'] = twos_complement_binary_to_decimal(decimal_to_binary(regs['PC'],32)[0:31]+'0')    #before jumping LSB of PC = 0
+        imm=twos_complement_binary_to_decimal(line[0:12])+regs[line[12:17]]
+        i=imm//4
+##        print('i in jalr: ',i)
+
+def u_type(line):
+    global regs
+    #lui
+    if line[-7:]=="0110111":
+        #Extracting dest reg and immediate from instruction
+        rd=line[-12:-7]
+        imm=line[:-12]
+        #Extending immediate according to instruction semantics
+        while len(imm)<32:
+            imm+='0'
+        #Converting immediate to int and writing it on the specified reg
+        imm=twos_complement_binary_to_decimal(imm)
+        regs[rd]=imm
+    else:
+        #Extracting dest reg and immediate from instruction
+        rd=line[-12:-7]
+        imm=line[:-12]
+        #Extending immediate according to instruction semantics
+        while len(imm)<32:
+            imm+='0'
+        #Converting immediate to int and writing it on the specified reg
+        imm=twos_complement_binary_to_decimal(imm)
+        regs[rd]=regs['PC']+imm
+
+def j_type(line):
+    global regs
+    global i
+##    i+=1
+##    regs['PC']=i*4
+    #Extracting dest reg and immediate from instruction
+    rd=line[-12:-7]
+    imm=line[0]+line[-19:-12]+line[-20]+line[1:-20]
+    imm=imm[:-1]+"0"
+    #Saving the return address in dest reg
+    regs[rd]=regs["PC"]+4
+    #Adding the offset to PC and i
+    imm=twos_complement_binary_to_decimal(imm)
+    regs["PC"]+=imm
+    i+=imm//4
+##    save()
+
+def b_type(instruction):
+    global regs
+    global i
+    global j_check
+    #extracting immediate
+    imm = sign_extend(instruction[0] + instruction[24:25] + instruction[1:7] + instruction[20:24] + '0', 13)
+    #extracting registers
+    rs2 = regs[instruction[7:12]]
+    rs1 = regs[instruction[12:17]]
+    funct3 = instruction[17:20]
+    print()
+    print(twos_complement_binary_to_decimal(imm))
+    print(twos_complement_binary_to_decimal(imm)//4)
+    #beq
+    if funct3 == '000':
+        if rs1 == rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+            i+=twos_complement_binary_to_decimal(imm)//4
+            j_check=1
+    #bne
+    elif funct3 == '001':
+        if rs1 != rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+            i+=twos_complement_binary_to_decimal(imm)//4
+            j_check=1
+    #blt
+    elif funct3 == '100':
+        if rs1 < rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+            i+=twos_complement_binary_to_decimal(imm)//4
+            j_check=1
+    #bge
+    elif funct3 == '101':
+        if rs1 >= rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+            i+=twos_complement_binary_to_decimal(imm)//4
+            j_check=1
+    #bltu
+    elif funct3 == '110':
+        if rs1 < rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+            i+=twos_complement_binary_to_decimal(imm)//4
+            j_check=1
+    #bgeu
+    elif funct3 == '111':
+        if rs1 >= rs2:
+            regs['PC'] += twos_complement_binary_to_decimal(imm)
+            i+=twos_complement_binary_to_decimal(imm)//4
+            j_check=1
+
+inpt=sys.argv[1]
+otpt=sys.argv[2]
+pointer1=open(inpt,'r')
+pointer2=open(otpt,'a')
+lines=pointer1.readlines()
+
+pointer2=open('otpt.txt','w')
+lines=[
+    '00000000001000000000010000010011',
+    '00000001000000000000010010010011',
+    '00000000000100000000100100010011',
+    '00000000001100000000100110010011',
+    '00000000100110010001100100110011',
+    '00000000000100000000001010010011',
+    '00000000100010010010000000100011',
+    '00000000010010010000100100010011',
+    '01000000010101000000010000110011',
+    '01000000010110011000100110110011',
+    '00000010000010011000001001100011',
+    '11111110000001000001010011100011',
+    '00000000100010010010000000100011',
+    '00000000010010010000100100010011',
+    '00000000000100000000001010010011',
+    '01000000010101000000010000110011',
+    '00000001110100000000001010010011',
+    '00000000010101000101010000110011',
+    '11111100000001000001011011100011',
+    '00000000000000000000000001100011'
+]
+j_check=0
+
+##for i in range(0,len(lines)-1):    
+##    lines[i]=lines[i][:-1]
+
+i = 0
+flag=0
+
+while i<len(lines):
+    output=[]
+    if(len(lines[i])!=32):
+        valid_instructions=False
+        break
+    if lines[i][-7:] in rtype:
+        r_type(lines[i])
+    elif lines[i][-7:] in itype:
+        i_type(lines[i])
+    elif lines[i][-7:] in stype:
+        s_type(lines[i])
+    elif lines[i][-7:] in btype:
+        if(lines[i]=="00000000000000000000000001100011"):
+            flag=1
+        b_type(lines[i])
+    elif lines[i][-7:] in utype:
+        u_type(lines[i])
+        if lines[i][-7:]=='1100111':
+            j_check=1
+    elif lines[i][-7:] in jtype:
+        j_type(lines[i])
+        j_check=1
+    else:
+        valid_instructions = False
+        break
+    regs['00000']=0
+    if j_check==0:
+        i+=1
+        regs["PC"]=i*4
+    j_check=0
+    for j in regs:
+##        print()
+        a=decimal_to_binary(regs[j],32)
+##        print('a: ',a)
+        b="0b"+a
+        output.append(b)
+    if valid_instructions:
+        pointer2.write(" ".join(output))
+        pointer2.write("\n")
+    if flag==1:
+        break
+
+##restore()
+if valid_instructions:
+    for i in data_mem:
+        pointer2.write(i+":"+"0b"+decimal_to_binary(data_mem[i],32)+"\n")
+
+##pointer1.close()
+pointer2.close()
