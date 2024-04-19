@@ -122,7 +122,7 @@ def rh_type(line):
         valid_instructions=False
         return
 
-def mtype(list2):
+def m_type(list2):
     global output
     temp = '1111111'+'11111'+register[list2[0]]+'111'+register[list2[1]]+'0001010'
     output.append(temp)

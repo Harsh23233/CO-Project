@@ -104,7 +104,7 @@ def r_type(line):
         elif(line[-15:-12]=='011'):
             rs1=decimal_to_binary(regs[rs1],32)
             rs1=int(rs1,2)
-            rs2=decimal_to_binary(regs[rs1],32)
+            rs2=decimal_to_binary(regs[rs2],32)
             rs2=int(rs2,2)
             if(rs1<rs2):
                 regs[rd]=1
